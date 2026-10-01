@@ -2,107 +2,347 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>LEXUS 全車系販促底價與特仕菜單利潤試算系統</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Noto+Sans+TC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --primary: #1a2530;
-      --accent: #b89758;
-      --bg: #f4f6f9;
-      --card-bg: #ffffff;
-      --text: #333333;
-      --border: #e2e8f0;
-      --danger: #e53e3e;
-      --success: #38a169;
+      --lexus-black: #0b0f14;
+      --lexus-panel: #131b24;
+      --lexus-card: #18222e;
+      --lexus-gold: #c5a880;
+      --lexus-gold-bright: #e2c9a4;
+      --lexus-gold-dark: #8c714e;
+      --lexus-border: rgba(197, 168, 128, 0.28);
+      --lexus-border-subtle: rgba(255, 255, 255, 0.1);
+      --lexus-text: #e6edf3;
+      --lexus-text-muted: #8b9bb0;
+      --lexus-danger: #f87171;
+      --lexus-danger-bg: rgba(239, 68, 68, 0.14);
+      --lexus-success: #4ade80;
+      --lexus-success-bg: rgba(34, 197, 94, 0.14);
+      --primary: var(--lexus-gold-bright);
+      --accent: var(--lexus-gold-bright);
+      --border: var(--lexus-border);
     }
-    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; }
-    body { background-color: var(--bg); color: var(--text); margin: 0; padding: 12px; }
-    .container { max-width: 1020px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 14px; }
-    @media (min-width: 800px) {
-      .container { grid-template-columns: 1fr 1fr; }
+    * { 
+      box-sizing: border-box; 
+      font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      background: radial-gradient(circle at 50% 0%, #172638 0%, var(--lexus-black) 78%);
+      color: var(--lexus-text);
+      margin: 0;
+      padding: 12px 10px 36px;
+      min-height: 100vh;
+      position: relative;
+    }
+    body::before {
+      content: "CONFIDENTIAL • 內部機密 嚴禁外流 • 高培元 設計";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+      font-size: 2rem;
+      color: rgba(255, 255, 255, 0.016);
+      font-weight: 800;
+      letter-spacing: 6px;
+      pointer-events: none;
+      white-space: nowrap;
+      z-index: 0;
+    }
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    @media (min-width: 860px) {
+      .container { grid-template-columns: 1fr 1fr; gap: 18px; }
       .full-width { grid-column: span 2; }
     }
-    .card { background: var(--card-bg); border-radius: 10px; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06); border: 1px solid var(--border); }
-    h2, h3 { margin-top: 0; color: var(--primary); }
-    h2 { font-size: 1.2rem; border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 10px; }
-    h3 { font-size: 1rem; margin-bottom: 10px; }
-    label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 5px; color: #2d3748; }
-    select, input[type="number"] { width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; margin-bottom: 10px; outline: none; background: #fff; }
-    select:focus, input:focus { border-color: var(--accent); }
+    .card {
+      background: linear-gradient(145deg, rgba(26, 37, 50, 0.94), rgba(17, 24, 34, 0.98));
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 12px;
+      padding: 18px 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--lexus-border-subtle);
+    }
+    .brand-header {
+      text-align: center;
+      padding: 22px 16px;
+      background: linear-gradient(180deg, rgba(28, 41, 56, 0.98), rgba(15, 21, 30, 0.98));
+      border: 1px solid var(--lexus-border);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(226, 201, 164, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+    .brand-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--lexus-gold-bright), transparent);
+    }
+    .brand-title {
+      font-family: 'Cinzel', "Noto Sans TC", serif;
+      letter-spacing: 1.5px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ffffff 30%, var(--lexus-gold-bright) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 6px 0;
+    }
+    .security-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(239, 68, 68, 0.16);
+      border: 1px solid rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .designer-tag {
+      font-size: 0.88rem;
+      color: var(--lexus-gold-bright);
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      margin-top: 4px;
+    }
+    h3 {
+      font-size: 1.02rem;
+      margin: 0 0 14px 0;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      border-left: 3px solid var(--lexus-gold);
+      padding-left: 10px;
+    }
+    label {
+      display: block;
+      font-size: 0.86rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--lexus-gold-bright);
+      letter-spacing: 0.5px;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      height: 46px; /* 針對行動端加大觸控熱區 */
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--lexus-border);
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      outline: none;
+      background: #101720;
+      color: #ffffff;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+      -webkit-appearance: menulist; /* 保證手機端下拉箭頭正常呈現 */
+      appearance: menulist;
+      cursor: pointer;
+    }
+    select option {
+      background-color: #131c26;
+      color: #ffffff;
+    }
+    select:focus, input:focus {
+      border-color: var(--lexus-gold-bright);
+      box-shadow: 0 0 0 2px rgba(197, 168, 128, 0.3);
+    }
     .row-flex { display: flex; gap: 10px; }
-    .row-flex > div { flex: 1; }
-    .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
-    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: normal; cursor: pointer; }
-    .checkbox-item input { width: 17px; height: 17px; margin: 0; cursor: pointer; }
-    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #edf2f7; color: #4a5568; }
-    .calc-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
-    .calc-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.88rem; }
-    .calc-row.total { font-weight: bold; font-size: 1.05rem; border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 8px; color: var(--primary); }
-    .highlight-val { color: var(--accent); font-weight: bold; }
-    .result-alert { border-radius: 8px; padding: 12px; font-weight: bold; text-align: center; font-size: 1.05rem; margin-top: 10px; }
-    .alert-success { background: #c6f6d5; color: #22543d; }
-    .alert-danger { background: #fed7d7; color: #9b2c2c; }
-    .note-box { font-size: 0.8rem; color: #718096; line-height: 1.4; margin-top: 4px; }
+    .row-flex > div { flex: 1; min-width: 0; }
+    .checkbox-group { display: flex; flex-direction: column; gap: 10px; }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.88rem;
+      font-weight: normal;
+      cursor: pointer;
+      color: var(--lexus-text);
+      user-select: none;
+      min-height: 28px;
+    }
+    .checkbox-item input {
+      accent-color: var(--lexus-gold);
+      width: 20px;
+      height: 20px;
+      margin: 0;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--lexus-border-subtle);
+      color: #cbd5e1;
+    }
+    .calc-box {
+      background: rgba(11, 15, 20, 0.8);
+      border: 1px solid var(--lexus-border-subtle);
+      border-radius: 10px;
+      padding: 14px;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+    }
+    .calc-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 7px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    .calc-row.total {
+      font-weight: 700;
+      font-size: 1.05rem;
+      border-top: 1px dashed rgba(197, 168, 128, 0.35);
+      padding-top: 10px;
+      margin-top: 10px;
+      color: #ffffff;
+    }
+    .highlight-val {
+      color: var(--lexus-gold-bright);
+      font-weight: 700;
+      font-family: 'Cinzel', monospace, sans-serif;
+    }
+    .result-alert {
+      border-radius: 10px;
+      padding: 12px;
+      font-weight: 700;
+      text-align: center;
+      font-size: 1.02rem;
+      margin-top: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .alert-success {
+      background: var(--lexus-success-bg);
+      border: 1px solid rgba(74, 222, 128, 0.45);
+      color: var(--lexus-success);
+    }
+    .alert-danger {
+      background: var(--lexus-danger-bg);
+      border: 1px solid rgba(248, 113, 113, 0.45);
+      color: var(--lexus-danger);
+    }
+    .note-box {
+      font-size: 0.8rem;
+      color: var(--lexus-text-muted);
+      line-height: 1.5;
+    }
+    .footer-disclaimer {
+      text-align: center;
+      font-size: 0.78rem;
+      color: #8092a7;
+      margin-top: 14px;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- 頁頭 -->
-  <div class="card full-width" style="text-align: center; border-top: 4px solid var(--accent);">
-    <h2>LEXUS 全車系 10月業專販促底價與特仕試算器</h2>
-    <div style="font-size: 0.82rem; color: #718096;">已同步最新高都 10月辦法（UX300h $10.5萬/加價購$1.5萬、全車系官方精準牌價校正）</div>
+  <div class="card full-width brand-header">
+    <div class="security-badge">
+      <span>●</span> 內部機密測試版本・禁止對外公開
+    </div>
+    <div class="brand-title">LEXUS EXECUTIVE PRICE CALCULATOR</div>
+    <div style="font-size: 0.98rem; color: #ffffff; font-weight: 500; margin-bottom: 4px;">全車系 10月販促底價與特仕菜單利潤試算系統</div>
+    <div class="designer-tag">系統設計與邏輯架構：高培元</div>
+    <div style="font-size: 0.78rem; color: var(--lexus-text-muted); margin-top: 6px;">已校準高都 10月最新業專辦法（含加價購業代價全額認列門檻與各車系官方牌價）</div>
   </div>
 
-  <!-- 車型與年式設定 -->
   <div class="card">
     <h3>1. 車型、等級與年式選擇</h3>
     <label>選擇車種車型</label>
-    <select id="modelSelect" onchange="onModelChange()"></select>
+    <!-- 直接預置原生 option，防止手機瀏覽器出現「沒有選項」 -->
+    <select id="modelSelect" onchange="onModelChange()">
+      <option value="NX" selected>NX 車系</option>
+      <option value="UX">UX 車系</option>
+      <option value="RX">RX 車系</option>
+      <option value="LBX">LBX 車系</option>
+      <option value="ES">ES 車系</option>
+      <option value="LM">LM 車系</option>
+      <option value="IS">IS 車系</option>
+      <option value="RZ">RZ 車系</option>
+      <option value="LS">LS 車系</option>
+    </select>
 
     <div class="row-flex">
       <div>
         <label>等級規格</label>
-        <select id="gradeSelect" onchange="onGradeChange()"></select>
+        <select id="gradeSelect" onchange="onGradeChange()">
+          <!-- 預置預設車型(NX)的等級，保證手機秒開即有選項 -->
+          <option value="nx200_deluxe" selected>NX200 豪華版</option>
+          <option value="nx200_elite">NX200 菁英版</option>
+          <option value="nx350_overtrail">NX350 Overtrail</option>
+          <option value="nx350_fsport">NX350 F SPORT</option>
+          <option value="nx350h_deluxe">NX350h 豪華版</option>
+          <option value="nx350h_top">NX350h 頂級版</option>
+          <option value="nx350h_flagship">NX350h 旗艦版</option>
+          <option value="nx450h_deluxe">NX450h+ 豪華版</option>
+          <option value="nx450h_fsport">NX450h+ F SPORT</option>
+        </select>
       </div>
       <div>
         <label>車輛年式</label>
         <select id="yearSelect" onchange="calculate()">
-          <option value="year26">正 26 年式</option>
+          <option value="year26" selected>正 26 年式</option>
           <option value="year27">準 27 年式</option>
         </select>
       </div>
     </div>
 
     <!-- NX200 專用基本條件開關 -->
-    <div id="nxConditionWrap" style="display:none; margin-bottom: 10px;">
-      <div style="background: #fffaf0; border: 1px solid #fbd38d; border-radius: 8px; padding: 12px;">
-        <label class="checkbox-item" style="color: #c05621; font-weight: bold; margin-bottom: 4px;">
+    <div id="nxConditionWrap" style="display:block; margin-bottom: 10px;">
+      <div style="background: rgba(197, 168, 128, 0.08); border: 1px solid rgba(197, 168, 128, 0.35); border-radius: 8px; padding: 12px;">
+        <label class="checkbox-item" style="color: var(--lexus-gold-bright); font-weight: bold; margin-bottom: 4px;">
           <input type="checkbox" id="nxTargetMet" onchange="calculate()" checked>
           <span>NX200 基本條件達標：10月份現訂交車「除 NX200 以外」達 2 台(含)以上</span>
         </label>
-        <div id="nxTargetDesc" style="font-size: 0.82rem; color: #744210; line-height: 1.5; margin-left: 25px;">
-          • <strong>勾選【達標 (有)】</strong>：適用公司表列最高優惠 <strong id="txtNxYes">$140,000</strong>。<br>
-          • <strong>未勾選【未達標 (無)】</strong>：核發折讓金額降為 <strong id="txtNxNo">$125,000</strong>（立即減少 $15,000 額度）。
+        <div id="nxTargetDesc" style="font-size: 0.82rem; color: #cbd5e1; line-height: 1.5; margin-left: 28px;">
+          • <strong>勾選【達標 (有)】</strong>：適用公司最高折讓 <strong id="txtNxYes" style="color:var(--lexus-gold-bright);">$140,000</strong>。<br>
+          • <strong>未勾選【未達標 (無)】</strong>：核發金額降為 <strong id="txtNxNo" style="color:#fca5a5;">$125,000</strong>（立即少 $15,000 額度）。
         </div>
       </div>
     </div>
 
     <!-- LS 未超折加發 3 萬 -->
     <div id="lsConditionWrap" style="display:none; margin-bottom: 10px;">
-      <label class="checkbox-item" style="background: #e2e8f0; padding: 6px 8px; border-radius: 4px;">
+      <label class="checkbox-item" style="background: rgba(255,255,255,0.05); border:1px solid var(--lexus-border-subtle); padding: 8px 10px; border-radius: 6px;">
         <input type="checkbox" id="lsBonusMet" onchange="calculate()" checked>
         <span>LS 車系未超折(含平折)每台加發 $30,000</span>
       </label>
     </div>
   </div>
 
-  <!-- 販促專案與累台獎金 -->
   <div class="card">
     <h3>2. 專案活動與業務獎金提撥</h3>
     
-    <!-- 雙十連發早鳥 -->
-    <div id="earlyBirdWrap" style="margin-bottom: 10px;">
+    <!-- 雙十連發早鳥 (NX200 預設隱藏) -->
+    <div id="earlyBirdWrap" style="display:none; margin-bottom: 10px;">
       <label>雙十連發・訂單爆發專案 (全車系排除 NX200)</label>
       <select id="earlyBirdSelect" onchange="calculate()">
         <option value="0">未符合 / 超過檔期 ($0)</option>
@@ -140,31 +380,29 @@
     <div id="promoBox" class="note-box"></div>
   </div>
 
-  <!-- 自選精裝配件 -->
   <div class="card full-width">
     <h3>4. 常用原廠配件精品加選</h3>
     <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; align-items: center;">
-      <span class="badge" id="badgeThreshold">騰躍門檻: -</span>
-      <span class="badge" id="badgePlusThreshold">PLUS門檻: -</span>
-      <span class="badge" id="badgeCurrentRec" style="background:#e2e8f0; color:#2d3748;">認列累積: $0</span>
-      <span class="badge" id="badgeSpecialReward" style="background:#e9d8fd; color:#553c9a;">特仕獎勵: $0</span>
+      <span class="badge" id="badgeThreshold" style="border-color: rgba(197,168,128,0.3); color: var(--lexus-gold-bright);">騰躍門檻: -</span>
+      <span class="badge" id="badgePlusThreshold" style="border-color: rgba(197,168,128,0.3); color: var(--lexus-gold-bright);">PLUS門檻: -</span>
+      <span class="badge" id="badgeCurrentRec" style="background: rgba(255,255,255,0.08); color: #ffffff;">認列累積: $0</span>
+      <span class="badge" id="badgeSpecialReward" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #d8b4fe;">特仕獎勵: $0</span>
     </div>
     
-    <!-- 門檻進度與差額提示條 -->
-    <div id="thresholdProgressWrap" style="background: #fffaf0; border: 1px solid #fbd38d; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px;">
+    <!-- 門檻進度與差額動態提示條 -->
+    <div id="thresholdProgressWrap" style="background: rgba(11, 16, 22, 0.85); border: 1px solid var(--lexus-border); border-radius: 8px; padding: 12px 14px; margin-bottom: 14px;">
       <div style="display: flex; justify-content: space-between; font-size: 0.88rem; font-weight: bold; margin-bottom: 6px;">
-        <span id="badgeDiffToThreshold" style="color: #c05621;">差額計算中...</span>
-        <span id="thresholdPercent" style="color: #718096;">0%</span>
+        <span id="badgeDiffToThreshold" style="color: var(--lexus-gold-bright);">門檻計算中...</span>
+        <span id="thresholdPercent" style="color: var(--lexus-text-muted);">0%</span>
       </div>
-      <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-        <div id="thresholdProgressBar" style="width: 0%; height: 100%; background: #b89758; transition: width 0.3s ease;"></div>
+      <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden;">
+        <div id="thresholdProgressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--lexus-gold-dark), var(--lexus-gold-bright)); transition: width 0.35s ease;"></div>
       </div>
     </div>
 
     <div id="accList" class="checkbox-group" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));"></div>
   </div>
 
-  <!-- 計算總結 -->
   <div class="card full-width">
     <h3>5. 底價清算與客戶菜單對決</h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
@@ -197,48 +435,27 @@
 
     </div>
   </div>
+
+  <!-- 底部機密聲明 -->
+  <div class="card full-width footer-disclaimer" style="padding: 14px;">
+    <div><strong>【 內部作業機密資產 • 嚴禁翻拍外傳 】</strong></div>
+    <div>本系統專供銷售顧問內部商談與合約利潤沙盤推演，所有表列牌價、加價購認列、專案優惠及累台獎勵均受高都汽車 LEXUS 部規章管轄。</div>
+    <div style="margin-top: 4px; color: var(--lexus-gold);">系統架構與介面設計：高培元 (P.Y. Kao) • 僅供測試使用</div>
+  </div>
 </div>
 
 <script>
-// 全車系完整資料庫 (依據最新 10月業專辦法與 2026 官方正確建議售價校正)
+// 全車系完整資料庫 (依據 10月最新業專辦法附件二與 9月精裝表)
 const vehicleData = {
-  "UX": {
-    name: "UX 車系",
-    grades: {
-      "ux300h_deluxe": {
-        name: "UX300h 豪華版",
-        listPrice: 1499000,
-        discounts: { year26: 105000, year27: 105000 }, // 最新辦法修正：10.5萬(原14萬)
-        isNX200: false,
-        allowEarlyBird: true,
-        threshold: 96000, plusThreshold: 112000,
-        specialBonus: 10000, plusBonus: 20000,
-        promoType: "single",
-        promos: [
-          // 最新辦法修正：優惠價 15,000 元，表列業代價 39,600 + 27,600 = 67,200
-          { id: "ux_promo1", name: "PVM環景 + MirrorPlus + GPS", cost: 15000, recognizeVal: 67200, desc: "最新專案優惠價 $15,000 (表列業代價認列 $67,200)" }
-        ],
-        accessories: [
-          { id: "ux_hud", name: "TFT HUD總成 + CAN訊號轉接線", cost: 12000 },
-          { id: "ux_uv", name: "UV光觸媒 + 負離子淨化系統", cost: 5600 },
-          { id: "ux_ctrl", name: "智慧型安全電控系統(CAN)", cost: 6500 },
-          { id: "ux_fold", name: "收鏡系統(實體線)", cost: 3800 },
-          { id: "ux_vest", name: "緊急救援 LED 背心", cost: 900 },
-          { id: "ux_coat", name: "LEXUS 鈦鍍膜-小型", cost: 16000 },
-          { id: "ux_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
-        ]
-      }
-    }
-  },
   "NX": {
     name: "NX 車系",
     grades: {
-      "nx200_elite": {
-        name: "NX200 菁英版",
-        listPrice: 1710000,
+      "nx200_deluxe": {
+        name: "NX200 豪華版",
+        listPrice: 1810000,
         discounts: {
-          year26: { yes: 120000, no: 105000 },
-          year27: { yes: 120000, no: 105000 }
+          year26: { yes: 140000, no: 125000 },
+          year27: { yes: 140000, no: 125000 }
         },
         isNX200: true,
         allowEarlyBird: false,
@@ -246,7 +463,7 @@ const vehicleData = {
         specialBonus: 5000, plusBonus: 15000,
         promoType: "single",
         promos: [
-          { id: "nx200_p1", name: "方案一：PVM環景 + AI導航娛樂升級套件(含圖資)", cost: 0, recognizeVal: 82700, desc: "專案優惠價 $0 (表列業代價認列 $82,700) ｜ 菁英/豪華均可選" },
+          { id: "nx200_p1", name: "方案一：PVM環景 + AI導航升級套件(含圖資)", cost: 0, recognizeVal: 82700, desc: "專案優惠價 $0 (表列業代價認列 $82,700) ｜ 菁英/豪華均可選" },
           { id: "nx200_p2", name: "方案二：PVM環景 + Mirror Plus + GPS", cost: 60000, recognizeVal: 70300, desc: "專案優惠價 $60,000 (表列業代價認列 $70,300) ｜ 菁英/豪華均可選" }
         ],
         accessories: [
@@ -261,12 +478,12 @@ const vehicleData = {
           { id: "nx_uv", name: "UV光觸媒 + 負離子淨化系統", cost: 5600 }
         ]
       },
-      "nx200_deluxe": {
-        name: "NX200 豪華版",
-        listPrice: 1810000,
+      "nx200_elite": {
+        name: "NX200 菁英版",
+        listPrice: 1710000,
         discounts: {
-          year26: { yes: 140000, no: 125000 },
-          year27: { yes: 140000, no: 125000 }
+          year26: { yes: 120000, no: 105000 },
+          year27: { yes: 120000, no: 105000 }
         },
         isNX200: true,
         allowEarlyBird: false,
@@ -274,7 +491,7 @@ const vehicleData = {
         specialBonus: 5000, plusBonus: 15000,
         promoType: "single",
         promos: [
-          { id: "nx200_p1", name: "方案一：PVM環景 + AI導航娛樂升級套件(含圖資)", cost: 0, recognizeVal: 82700, desc: "專案優惠價 $0 (表列業代價認列 $82,700) ｜ 菁英/豪華均可選" },
+          { id: "nx200_p1", name: "方案一：PVM環景 + AI導航升級套件(含圖資)", cost: 0, recognizeVal: 82700, desc: "專案優惠價 $0 (表列業代價認列 $82,700) ｜ 菁英/豪華均可選" },
           { id: "nx200_p2", name: "方案二：PVM環景 + Mirror Plus + GPS", cost: 60000, recognizeVal: 70300, desc: "專案優惠價 $60,000 (表列業代價認列 $70,300) ｜ 菁英/豪華均可選" }
         ],
         accessories: [
@@ -291,7 +508,7 @@ const vehicleData = {
       },
       "nx350_overtrail": {
         name: "NX350 Overtrail",
-        listPrice: 2340000, // 官方牌價精確校正：234萬
+        listPrice: 2340000,
         discounts: { year26: 240000, year27: 190000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 98000, plusThreshold: 118000, specialBonus: 10000, plusBonus: 20000,
@@ -308,7 +525,7 @@ const vehicleData = {
       },
       "nx350_fsport": {
         name: "NX350 F SPORT",
-        listPrice: 2630000, // 官方牌價精確校正：263萬
+        listPrice: 2630000,
         discounts: { year26: 260000, year27: 210000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 75000, plusThreshold: 92000, specialBonus: 10000, plusBonus: 20000,
@@ -323,10 +540,11 @@ const vehicleData = {
       },
       "nx350h_deluxe": {
         name: "NX350h 豪華版",
-        listPrice: 2075000, // 官方牌價精確校正：207.5萬
+        listPrice: 2075000,
         discounts: { year26: 160000, year27: 140000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 98000, plusThreshold: 118000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "nx350h_p1", name: "PVM環景 + 全車3M極黑/FSK冰鑽", cost: 15000, recognizeVal: 66900, desc: "專案優惠價 $15,000 (表列業代價認列 $66,900)" }
         ],
@@ -339,10 +557,11 @@ const vehicleData = {
       },
       "nx350h_top": {
         name: "NX350h 頂級版",
-        listPrice: 2275000, // 官方牌價精確校正：227.5萬
+        listPrice: 2275000,
         discounts: { year26: 170000, year27: 140000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 98000, plusThreshold: 118000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "nx350h_top_p1", name: "PVM環景 + 全車3M極黑/FSK冰鑽", cost: 15000, recognizeVal: 66900, desc: "專案優惠價 $15,000 (表列業代價認列 $66,900)" }
         ],
@@ -355,7 +574,7 @@ const vehicleData = {
       },
       "nx350h_flagship": {
         name: "NX350h 旗艦版",
-        listPrice: 2575000, // 官方牌價精確校正：257.5萬
+        listPrice: 2575000,
         discounts: { year26: 180000, year27: 150000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 75000, plusThreshold: 92000, specialBonus: 10000, plusBonus: 20000,
@@ -370,7 +589,7 @@ const vehicleData = {
       },
       "nx450h_deluxe": {
         name: "NX450h+ 豪華版",
-        listPrice: 2375000, // 官方牌價精確校正：237.5萬
+        listPrice: 2375000,
         discounts: { year26: 220000, year27: 220000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 98000, plusThreshold: 118000, specialBonus: 10000, plusBonus: 20000,
@@ -385,7 +604,7 @@ const vehicleData = {
       },
       "nx450h_fsport": {
         name: "NX450h+ F SPORT",
-        listPrice: 2845000, // 官方牌價精確校正：284.5萬
+        listPrice: 2845000,
         discounts: { year26: 240000, year27: 240000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 75000, plusThreshold: 92000, specialBonus: 10000, plusBonus: 20000,
@@ -399,15 +618,43 @@ const vehicleData = {
       }
     }
   },
+  "UX": {
+    name: "UX 車系",
+    grades: {
+      "ux300h_deluxe": {
+        name: "UX300h 豪華版",
+        listPrice: 1499000,
+        discounts: { year26: 105000, year27: 105000 },
+        isNX200: false,
+        allowEarlyBird: true,
+        threshold: 96000, plusThreshold: 112000,
+        specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
+        promos: [
+          { id: "ux_promo1", name: "PVM環景 + MirrorPlus + GPS", cost: 15000, recognizeVal: 67200, desc: "專案優惠價 $15,000 (表列業代價認列 $67,200)" }
+        ],
+        accessories: [
+          { id: "ux_hud", name: "TFT HUD總成 + CAN訊號轉接線", cost: 12000 },
+          { id: "ux_uv", name: "UV光觸媒 + 負離子淨化系統", cost: 5600 },
+          { id: "ux_ctrl", name: "智慧型安全電控系統(CAN)", cost: 6500 },
+          { id: "ux_fold", name: "收鏡系統(實體線)", cost: 3800 },
+          { id: "ux_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "ux_coat", name: "LEXUS 鈦鍍膜-小型", cost: 16000 },
+          { id: "ux_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
+        ]
+      }
+    }
+  },
   "RX": {
     name: "RX 車系",
     grades: {
       "rx350_deluxe": {
         name: "RX350 豪華版",
-        listPrice: 2460000, // 官方牌價精確校正：246萬
+        listPrice: 2460000,
         discounts: { year26: 240000, year27: 210000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 90000, plusThreshold: 120000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "rx_step_promo", name: "電動車側踏 + 全車3M極黑", cost: 45000, recognizeVal: 70200, desc: "專案優惠價 $45,000 (表列業代價認列 $70,200)" }
         ],
@@ -422,10 +669,11 @@ const vehicleData = {
       },
       "rx350_top": {
         name: "RX350 頂級版",
-        listPrice: 2680000, // 官方牌價精確校正：268萬
+        listPrice: 2680000,
         discounts: { year26: 260000, year27: 230000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 85000, plusThreshold: 105000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "rx_top_p1", name: "安全電控/DVR (二選一) + 全車3M極黑", cost: 15000, recognizeVal: 34600, desc: "專案優惠價 $15,000 (表列業代價認列 $34,600)" }
         ],
@@ -440,12 +688,13 @@ const vehicleData = {
       },
       "rx350_flagship": {
         name: "RX350 旗艦版 / F SPORT",
-        listPrice: 2950000, // 官方牌價精確校正：295萬
+        listPrice: 2950000,
         discounts: { year26: 280000, year27: 250000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 85000, plusThreshold: 105000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
-          { id: "rx_top_p1_flag", name: "安全電控/DVR (二選一) + 全車3M極黑 (F SPORT不適用)", cost: 15000, recognizeVal: 34600, desc: "專案優惠價 $15,000 (表列業代價認列 $34,600)" }
+          { id: "rx_top_p1_flag", name: "安全電控/DVR (二選一) + 全車3M極黑", cost: 15000, recognizeVal: 34600, desc: "專案優惠價 $15,000 (表列業代價認列 $34,600)" }
         ],
         accessories: [
           { id: "rx_top_step_fl", name: "RX 電動車側踏板", cost: 50800 },
@@ -455,10 +704,11 @@ const vehicleData = {
       },
       "rx350h_deluxe": {
         name: "RX350h 豪華版",
-        listPrice: 2560000, // 官方牌價精確校正：256萬
+        listPrice: 2560000,
         discounts: { year26: 240000, year27: 210000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 90000, plusThreshold: 120000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "rx_step_promo_h", name: "電動車側踏 + 全車3M極黑", cost: 45000, recognizeVal: 70200, desc: "專案優惠價 $45,000 (表列業代價認列 $70,200)" }
         ],
@@ -472,10 +722,11 @@ const vehicleData = {
       },
       "rx350h_top": {
         name: "RX350h 頂級版",
-        listPrice: 2780000, // 官方牌價精確校正：278萬
+        listPrice: 2780000,
         discounts: { year26: 260000, year27: 230000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 85000, plusThreshold: 105000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "rx_top_p2", name: "電控/DVR (二選一) + 全車3M極黑", cost: 15000, recognizeVal: 34600, desc: "專案優惠價 $15,000 (表列業代價認列 $34,600)" }
         ],
@@ -487,10 +738,11 @@ const vehicleData = {
       },
       "rx350h_flagship": {
         name: "RX350h 旗艦版",
-        listPrice: 3050000, // 官方牌價精確校正：305萬
+        listPrice: 3050000,
         discounts: { year26: 280000, year27: 250000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 85000, plusThreshold: 105000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "rx_top_p2_flag", name: "電控/DVR (二選一) + 全車3M極黑", cost: 15000, recognizeVal: 34600, desc: "專案優惠價 $15,000 (表列業代價認列 $34,600)" }
         ],
@@ -501,7 +753,7 @@ const vehicleData = {
       },
       "rx450h_deluxe": {
         name: "RX450h+ 豪華版",
-        listPrice: 3150000, // 官方牌價精確校正：315萬
+        listPrice: 3150000,
         discounts: { year26: 210000, year27: 210000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 85000, plusThreshold: 105000, specialBonus: 10000, plusBonus: 20000,
@@ -514,10 +766,11 @@ const vehicleData = {
       },
       "rx450h_flagship": {
         name: "RX450h+ 旗艦版 / 500h",
-        listPrice: 3550000, // 官方牌價精確校正：355萬
+        listPrice: 3550000,
         discounts: { year26: 230000, year27: 230000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 85000, plusThreshold: 105000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "rx_450_3m_p", name: "全車 3M極黑/FSK冰鑽 加購", cost: 9000, recognizeVal: 24200, desc: "專案優惠價 $9,000 (表列業代價認列 $24,200)" }
         ],
@@ -533,12 +786,12 @@ const vehicleData = {
     grades: {
       "lbx_active_relax": {
         name: "LBX ACTIVE(+) / Relax",
-        listPrice: 1279000, // 官方牌價精確校正：127.9萬起
+        listPrice: 1279000,
         discounts: { year26: 30000, year27: 30000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 95000, plusThreshold: 115000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
-          // 最新辦法修正：業代價為 27,600 元，專案優惠價 $0
           { id: "lbx_mirror_promo", name: "2.0 電子後視鏡系統 專案特惠", cost: 0, recognizeVal: 27600, desc: "專案優惠價 $0 (表列業代價認列 $27,600)" }
         ],
         accessories: [
@@ -554,10 +807,11 @@ const vehicleData = {
       },
       "lbx_cool": {
         name: "LBX Cool",
-        listPrice: 1410000, // 官方牌價精確校正：141萬
+        listPrice: 1410000,
         discounts: { year26: 30000, year27: 30000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 95000, plusThreshold: 108000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "lbx_cool_mirror_promo", name: "2.0 電子後視鏡系統 專案特惠", cost: 0, recognizeVal: 27600, desc: "專案優惠價 $0 (表列業代價認列 $27,600)" }
         ],
@@ -582,6 +836,7 @@ const vehicleData = {
         discounts: { year26: 40000, year27: 40000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 68000, plusThreshold: 79000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "es_dvr_3m", name: "DVR + 3M極黑隔熱紙 專案特惠", cost: 0, recognizeVal: 34600, desc: "專案優惠價 $0 (表列業代價認列 $34,600)" }
         ],
@@ -602,6 +857,7 @@ const vehicleData = {
         discounts: { year26: 60000, year27: 60000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 68000, plusThreshold: 79000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "es5_dvr_3m", name: "DVR + 3M極黑隔熱紙 專案特惠", cost: 0, recognizeVal: 34600, desc: "專案優惠價 $0 (表列業代價認列 $34,600)" }
         ],
@@ -618,6 +874,7 @@ const vehicleData = {
         discounts: { year26: 100000, year27: 100000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 68000, plusThreshold: 79000, specialBonus: 10000, plusBonus: 20000,
+        promoType: "single",
         promos: [
           { id: "es5_dvr_3m_fl", name: "DVR + 3M極黑隔熱紙 專案特惠", cost: 0, recognizeVal: 34600, desc: "專案優惠價 $0 (表列業代價認列 $34,600)" }
         ],
@@ -674,7 +931,7 @@ const vehicleData = {
     grades: {
       "is300h_fsport": {
         name: "IS300h F SPORT",
-        listPrice: 1990000, // 官方牌價精確校正：199萬
+        listPrice: 1990000,
         discounts: { year26: 80000, year27: 80000 },
         isNX200: false, allowEarlyBird: true,
         threshold: 80000, plusThreshold: 100000, specialBonus: 10000, plusBonus: 20000,
@@ -719,258 +976,314 @@ const vehicleData = {
     }
   }
 };
-window.onload = function() {
-  const modelSel = document.getElementById("modelSelect");
-  for (let key in vehicleData) {
-    let opt = document.createElement("option");
-    opt.value = key;
-    opt.innerText = vehicleData[key].name;
-    modelSel.appendChild(opt);
-  }
-  onModelChange();
-};
 
+// 核心切換事件
 function onModelChange() {
-  const modelKey = document.getElementById("modelSelect").value;
-  const grades = vehicleData[modelKey].grades;
-  const gradeSel = document.getElementById("gradeSelect");
-  gradeSel.innerHTML = "";
-  for (let gKey in grades) {
-    let opt = document.createElement("option");
-    opt.value = gKey;
-    opt.innerText = grades[gKey].name;
-    gradeSel.appendChild(opt);
+  try {
+    const modelSel = document.getElementById("modelSelect");
+    const modelKey = modelSel ? modelSel.value : "NX";
+    const gradeSel = document.getElementById("gradeSelect");
+    if (!gradeSel) return;
+    
+    gradeSel.innerHTML = "";
+    if (!vehicleData[modelKey]) return;
+
+    const grades = vehicleData[modelKey].grades;
+    for (let gKey in grades) {
+      let opt = document.createElement("option");
+      opt.value = gKey;
+      opt.innerText = grades[gKey].name;
+      gradeSel.appendChild(opt);
+    }
+    onGradeChange();
+  } catch(e) {
+    console.error("onModelChange error: ", e);
   }
-  onGradeChange();
 }
 
 function onGradeChange() {
-  const modelKey = document.getElementById("modelSelect").value;
-  const gradeKey = document.getElementById("gradeSelect").value;
-  const grade = vehicleData[modelKey].grades[gradeKey];
-  const year = document.getElementById("yearSelect").value;
+  try {
+    const modelKey = document.getElementById("modelSelect").value;
+    const gradeKey = document.getElementById("gradeSelect").value;
+    if (!vehicleData[modelKey] || !vehicleData[modelKey].grades[gradeKey]) return;
 
-  // 1. NX 專用條件動態文字
-  if (grade.isNX200) {
-    document.getElementById("nxConditionWrap").style.display = "block";
-    const yesVal = grade.discounts[year].yes;
-    const noVal = grade.discounts[year].no;
-    document.getElementById("txtNxYes").innerText = `$${yesVal.toLocaleString()}`;
-    document.getElementById("txtNxNo").innerText = `$${noVal.toLocaleString()}`;
-  } else {
-    document.getElementById("nxConditionWrap").style.display = "none";
-  }
+    const grade = vehicleData[modelKey].grades[gradeKey];
+    const year = document.getElementById("yearSelect").value;
 
-  // 2. 雙十連發
-  const earlyBirdWrap = document.getElementById("earlyBirdWrap");
-  if (!grade.allowEarlyBird) {
-    earlyBirdWrap.style.display = "none";
-    document.getElementById("earlyBirdSelect").value = "0";
-  } else {
-    earlyBirdWrap.style.display = "block";
-    document.getElementById("earlyBirdSelect").value = "25000";
-  }
+    // 1. NX 專用條件文字
+    const nxConditionWrap = document.getElementById("nxConditionWrap");
+    if (grade.isNX200) {
+      nxConditionWrap.style.display = "block";
+      const yesVal = grade.discounts[year].yes;
+      const noVal = grade.discounts[year].no;
+      document.getElementById("txtNxYes").innerText = `$${yesVal.toLocaleString()}`;
+      document.getElementById("txtNxNo").innerText = `$${noVal.toLocaleString()}`;
+    } else {
+      nxConditionWrap.style.display = "none";
+    }
 
-  // 3. LM / LS 專屬設定
-  document.getElementById("lmComboWrap").style.display = grade.isLM ? "block" : "none";
-  document.getElementById("lsConditionWrap").style.display = grade.isLS ? "block" : "none";
+    // 2. 雙十連發
+    const earlyBirdWrap = document.getElementById("earlyBirdWrap");
+    if (!grade.allowEarlyBird) {
+      earlyBirdWrap.style.display = "none";
+      document.getElementById("earlyBirdSelect").value = "0";
+    } else {
+      earlyBirdWrap.style.display = "block";
+      if (document.getElementById("earlyBirdSelect").value === "0") {
+        document.getElementById("earlyBirdSelect").value = "25000";
+      }
+    }
 
-  // 4. 促銷加價購渲染 (業代價認列)
-  const promoBox = document.getElementById("promoBox");
-  promoBox.innerHTML = "";
-  if (grade.promos && grade.promos.length > 0) {
-    if (grade.promoType === "single") {
-      // 互斥單選模式 (Radio)
-      let noneDiv = document.createElement("div");
-      noneDiv.style.marginBottom = "8px";
-      noneDiv.innerHTML = `
-        <label class="checkbox-item" style="color: #4a5568;">
-          <input type="radio" name="promo_radio" value="0" data-recognize="0" onchange="calculate()">
-          <span>不選用促銷加價購 ($0)</span>
-        </label>
-      `;
-      promoBox.appendChild(noneDiv);
+    // 3. LM / LS 專屬設定
+    document.getElementById("lmComboWrap").style.display = grade.isLM ? "block" : "none";
+    document.getElementById("lsConditionWrap").style.display = grade.isLS ? "block" : "none";
 
-      grade.promos.forEach((p, idx) => {
-        let div = document.createElement("div");
-        div.style.marginBottom = "8px";
-        const isDefaultChecked = idx === 0 ? "checked" : "";
-        div.innerHTML = `
-          <label class="checkbox-item" style="color: #2b6cb0; font-weight: bold;">
-            <input type="radio" name="promo_radio" class="promo-item-radio" value="${p.cost}" data-recognize="${p.recognizeVal}" id="${p.id}" onchange="calculate()" ${isDefaultChecked}>
-            <span>${p.name} (專案進貨成本 $${p.cost.toLocaleString()})</span>
+    // 4. 促銷加價購渲染 (業代價認列)
+    const promoBox = document.getElementById("promoBox");
+    promoBox.innerHTML = "";
+    if (grade.promos && grade.promos.length > 0) {
+      if (grade.promoType === "single") {
+        // 單選模式
+        let noneDiv = document.createElement("div");
+        noneDiv.style.marginBottom = "8px";
+        noneDiv.innerHTML = `
+          <label class="checkbox-item" style="color: #94a3b8;">
+            <input type="radio" name="promo_radio" value="0" data-recognize="0" onchange="calculate()">
+            <span>不選用促銷加價購 ($0)</span>
           </label>
-          <div style="font-size: 0.8rem; color: #718096; margin-left: 25px;">${p.desc}</div>
         `;
-        promoBox.appendChild(div);
+        promoBox.appendChild(noneDiv);
+
+        grade.promos.forEach((p, idx) => {
+          let div = document.createElement("div");
+          div.style.marginBottom = "8px";
+          const isDefaultChecked = (idx === 0) ? "checked" : "";
+          div.innerHTML = `
+            <label class="checkbox-item" style="color: var(--lexus-gold-bright); font-weight: bold;">
+              <input type="radio" name="promo_radio" class="promo-item-radio" value="${p.cost}" data-recognize="${p.recognizeVal}" id="${p.id}" onchange="calculate()" ${isDefaultChecked}>
+              <span>${p.name} (專案進貨成本 $${p.cost.toLocaleString()})</span>
+            </label>
+            <div style="font-size: 0.8rem; color: var(--lexus-text-muted); margin-left: 28px;">${p.desc}</div>
+          `;
+          promoBox.appendChild(div);
+        });
+      } else {
+        // 多選模式
+        grade.promos.forEach((p) => {
+          let div = document.createElement("div");
+          div.style.marginBottom = "6px";
+          div.innerHTML = `
+            <label class="checkbox-item" style="color: var(--lexus-gold-bright); font-weight: bold;">
+              <input type="checkbox" class="promo-item" value="${p.cost}" data-recognize="${p.recognizeVal}" id="${p.id}" onchange="calculate()" checked>
+              <span>${p.name} (專案進貨成本 $${p.cost.toLocaleString()})</span>
+            </label>
+            <div style="font-size: 0.8rem; color: var(--lexus-text-muted); margin-left: 28px;">${p.desc}</div>
+          `;
+          promoBox.appendChild(div);
+        });
+      }
+    } else {
+      promoBox.innerHTML = `<span style="color:#8b9bb0;">本車型無特殊專案配件加價購，適用一般特仕一覽表。</span>`;
+    }
+
+    // 5. 特仕門檻標籤
+    document.getElementById("badgeThreshold").innerText = `騰躍門檻: $${grade.threshold.toLocaleString()}`;
+    document.getElementById("badgePlusThreshold").innerText = `PLUS門檻: $${grade.plusThreshold.toLocaleString()}`;
+
+    // 6. 配件精品渲染
+    const accList = document.getElementById("accList");
+    accList.innerHTML = "";
+    if (grade.accessories && grade.accessories.length > 0) {
+      grade.accessories.forEach(acc => {
+        let div = document.createElement("div");
+        div.innerHTML = `
+          <label class="checkbox-item">
+            <input type="checkbox" class="acc-item" value="${acc.cost}" id="${acc.id}" onchange="calculate()">
+            <span>${acc.name} ($${acc.cost.toLocaleString()})</span>
+          </label>
+        `;
+        accList.appendChild(div);
       });
     } else {
-      // 多選模式
-      grade.promos.forEach((p) => {
-        let div = document.createElement("div");
-        div.style.marginBottom = "6px";
-        div.innerHTML = `
-          <label class="checkbox-item" style="color: #2b6cb0; font-weight: bold;">
-            <input type="checkbox" class="promo-item" value="${p.cost}" data-recognize="${p.recognizeVal}" id="${p.id}" onchange="calculate()" checked>
-            <span>${p.name} (專案進貨成本 $${p.cost.toLocaleString()})</span>
-          </label>
-          <div style="font-size: 0.8rem; color: #718096; margin-left: 25px;">${p.desc}</div>
-        `;
-        promoBox.appendChild(div);
-      });
+      accList.innerHTML = `<span style="color:#8b9bb0; font-size:0.85rem;">此等級目前無精裝一覽表獨立項目或已含全套配件。</span>`;
     }
-  } else {
-    promoBox.innerHTML = `<span style="color:#a0aec0;">本車型無特殊專案配件加價購，適用一般特仕一覽表。</span>`;
+
+    calculate();
+  } catch(e) {
+    console.error("onGradeChange error: ", e);
   }
-
-  // 5. 特仕門檻標籤
-  document.getElementById("badgeThreshold").innerText = `騰躍門檻: $${grade.threshold.toLocaleString()}`;
-  document.getElementById("badgePlusThreshold").innerText = `PLUS門檻: $${grade.plusThreshold.toLocaleString()}`;
-
-  // 6. 配件精品渲染
-  const accList = document.getElementById("accList");
-  accList.innerHTML = "";
-  if (grade.accessories && grade.accessories.length > 0) {
-    grade.accessories.forEach(acc => {
-      let div = document.createElement("div");
-      div.innerHTML = `
-        <label class="checkbox-item">
-          <input type="checkbox" class="acc-item" value="${acc.cost}" id="${acc.id}" onchange="calculate()">
-          <span>${acc.name} ($${acc.cost.toLocaleString()})</span>
-        </label>
-      `;
-      accList.appendChild(div);
-    });
-  } else {
-    accList.innerHTML = `<span style="color:#a0aec0; font-size:0.85rem;">此等級目前無精裝一覽表獨立項目或已含全套配件。</span>`;
-  }
-
-  calculate();
 }
 
+// 核心計算引擎
 function calculate() {
-  const modelKey = document.getElementById("modelSelect").value;
-  const gradeKey = document.getElementById("gradeSelect").value;
-  const grade = vehicleData[modelKey].grades[gradeKey];
-  const year = document.getElementById("yearSelect").value;
+  try {
+    const modelKey = document.getElementById("modelSelect").value;
+    const gradeKey = document.getElementById("gradeSelect").value;
+    if (!modelKey || !gradeKey || !vehicleData[modelKey] || !vehicleData[modelKey].grades[gradeKey]) return;
 
-  // 1. 基本可優惠金額計算
-  let baseDiscount = 0;
-  if (grade.isNX200) {
-    const met = document.getElementById("nxTargetMet").checked;
-    baseDiscount = met ? grade.discounts[year].yes : grade.discounts[year].no;
-  } else {
-    baseDiscount = grade.discounts[year] || 0;
-  }
+    const grade = vehicleData[modelKey].grades[gradeKey];
+    const year = document.getElementById("yearSelect").value;
 
-  // 2. 配件實質進貨成本 與 特仕門檻認列金額
-  let accCost = 0;
-  let accRecognized = 0;
-
-  // 加價購項目：支援 Radio 單選與 Checkbox 多選
-  if (grade.promoType === "single") {
-    const selectedRadio = document.querySelector('input[name="promo_radio"]:checked');
-    if (selectedRadio) {
-      accCost += parseInt(selectedRadio.value);
-      accRecognized += parseInt(selectedRadio.getAttribute("data-recognize") || 0);
-    }
-  } else {
-    document.querySelectorAll(".promo-item:checked").forEach(cb => {
-  // 3. 特仕獎勵與差額提示條計算
-  let specialBonus = 0;
-  let bonusLabel = "未達門檻 ($0)";
-  let diffBadge = document.getElementById("badgeDiffToThreshold");
-  let pBar = document.getElementById("thresholdProgressBar");
-  let pPercent = document.getElementById("thresholdPercent");
-  let pWrap = document.getElementById("thresholdProgressWrap");
-
-  if (accRecognized >= grade.plusThreshold) {
-    specialBonus = grade.plusBonus;
-    bonusLabel = `騰躍 PLUS 達成 (+$${specialBonus.toLocaleString()})`;
-    diffBadge.innerText = `恭喜已達最高等級【騰躍 PLUS 版】！(享全額最高獎勵 $${specialBonus.toLocaleString()})`;
-    pWrap.style.background = "#f0fff4";
-    pWrap.style.borderColor = "#9ae6b4";
-    diffBadge.style.color = "#22543d";
-    pBar.style.background = "#38a169";
-    pBar.style.width = "100%";
-    pPercent.innerText = "100% (已達頂標)";
-  } else if (accRecognized >= grade.threshold) {
-    specialBonus = grade.specialBonus;
-    bonusLabel = `騰躍特仕 達成 (+$${specialBonus.toLocaleString()})`;
-    const diffToPlus = grade.plusThreshold - accRecognized;
-    const bonusGap = grade.plusBonus - grade.specialBonus;
-    const percent = Math.min(100, Math.round((accRecognized / grade.plusThreshold) * 100));
-    diffBadge.innerText = `已達【騰躍特仕】！還差 $${diffToPlus.toLocaleString()} 配件可升級【騰躍 PLUS】(獎勵再加 $${bonusGap.toLocaleString()})`;
-    pWrap.style.background = "#ebf8ff";
-    pWrap.style.borderColor = "#bee3f8";
-    diffBadge.style.color = "#2b6cb0";
-    pBar.style.background = "#3182ce";
-    pBar.style.width = `${percent}%`;
-    pPercent.innerText = `${percent}% (目標 PLUS $${grade.plusThreshold.toLocaleString()})`;
-  } else {
-    const diffToNormal = grade.threshold - accRecognized;
-    const percent = Math.min(100, Math.round((accRecognized / grade.threshold) * 100));
-    diffBadge.innerText = `還差 $${diffToNormal.toLocaleString()} 配件可達【騰躍特仕門檻】(可現領 $${grade.specialBonus.toLocaleString()} 專案獎勵)`;
-    pWrap.style.background = "#fffaf0";
-    pWrap.style.borderColor = "#fbd38d";
-    diffBadge.style.color = "#c05621";
-    pBar.style.background = "#b89758";
-    pBar.style.width = `${percent}%`;
-    pPercent.innerText = `${percent}% (目標騰躍 $${grade.threshold.toLocaleString()})`;
-  }
-  document.getElementById("badgeSpecialReward").innerText = bonusLabel;
-
-  // 4. 活動專案加碼 (雙十 / LM COMBO / LS 未超折)
-  let eventBonus = 0;
-  if (grade.allowEarlyBird) {
-    eventBonus += parseInt(document.getElementById("earlyBirdSelect").value);
-  }
-  if (grade.isLM) {
-    eventBonus += parseInt(document.getElementById("lmComboSelect").value);
-  }
-  if (grade.isLS && document.getElementById("lsBonusMet").checked) {
-    eventBonus += 30000;
-  }
-
-  // 5. 個人職級獎勵
-  let tierBonus = parseInt(document.getElementById("tierSelect").value);
-
-  // 6. 總計結算
-  const totalCost = grade.listPrice + accCost;
-  const maxDiscount = baseDiscount + eventBonus + specialBonus + tierBonus;
-  const floorPrice = totalCost - maxDiscount;
-
-  // 介面渲染
-  document.getElementById("txtListPrice").innerText = `$${grade.listPrice.toLocaleString()}`;
-  document.getElementById("txtAccCost").innerText = `+$${accCost.toLocaleString()}`;
-  document.getElementById("txtTotalCost").innerText = `$${totalCost.toLocaleString()}`;
-
-  document.getElementById("txtBaseDiscount").innerText = `-$${baseDiscount.toLocaleString()}`;
-  document.getElementById("txtEventBonus").innerText = `-$${eventBonus.toLocaleString()}`;
-  document.getElementById("txtSpecialReward").innerText = `-$${specialBonus.toLocaleString()}`;
-  document.getElementById("txtTierReward").innerText = `-$${tierBonus.toLocaleString()}`;
-  document.getElementById("txtMaxDiscount").innerText = `-$${maxDiscount.toLocaleString()}`;
-
-  document.getElementById("txtFloorPrice").innerText = `$${floorPrice.toLocaleString()}`;
-
-  // 7. 客戶出價比對
-  const targetVal = document.getElementById("targetPrice").value;
-  const compBox = document.getElementById("compareResult");
-  if (targetVal && targetVal > 0) {
-    const targetPrice = parseInt(targetVal);
-    const diff = targetPrice - floorPrice;
-    compBox.style.display = "block";
-    if (diff >= 0) {
-      compBox.className = "result-alert alert-success";
-      compBox.innerHTML = `可合規承做！<br><span style="font-size:0.85rem">預估利潤空間：$${diff.toLocaleString()} 元</span>`;
+    // 1. 基本可優惠金額計算
+    let baseDiscount = 0;
+    if (grade.isNX200) {
+      const met = document.getElementById("nxTargetMet").checked;
+      baseDiscount = met ? grade.discounts[year].yes : grade.discounts[year].no;
     } else {
-      compBox.className = "result-alert alert-danger";
-      compBox.innerHTML = `嚴重超折倒賠！<br><span style="font-size:0.85rem">超出底線需自行倒貼超折：$${Math.abs(diff).toLocaleString()} 元</span>`;
+      baseDiscount = grade.discounts[year] || 0;
     }
-  } else {
-    compBox.style.display = "none";
+
+    // 2. 配件實質進貨成本 與 特仕門檻認列金額
+    let accCost = 0;
+    let accRecognized = 0;
+
+    // 加價購項目
+    if (grade.promoType === "single") {
+      const selectedRadio = document.querySelector('input[name="promo_radio"]:checked');
+      if (selectedRadio) {
+        accCost += parseInt(selectedRadio.value || 0);
+        accRecognized += parseInt(selectedRadio.getAttribute("data-recognize") || 0);
+      }
+    } else {
+      document.querySelectorAll(".promo-item:checked").forEach(cb => {
+        accCost += parseInt(cb.value || 0);
+        accRecognized += parseInt(cb.getAttribute("data-recognize") || 0);
+      });
+    }
+
+    // 一般配件項目
+    document.querySelectorAll(".acc-item:checked").forEach(cb => {
+      let cost = parseInt(cb.value || 0);
+      accCost += cost;
+      accRecognized += cost;
+    });
+
+    document.getElementById("badgeCurrentRec").innerText = `認列累積: $${accRecognized.toLocaleString()}`;
+
+    // 3. 特仕獎勵與差額提示條計算
+    let specialBonus = 0;
+    let bonusLabel = "未達門檻 ($0)";
+    const diffBadge = document.getElementById("badgeDiffToThreshold");
+    const pBar = document.getElementById("thresholdProgressBar");
+    const pPercent = document.getElementById("thresholdPercent");
+    const pWrap = document.getElementById("thresholdProgressWrap");
+
+    if (accRecognized >= grade.plusThreshold) {
+      specialBonus = grade.plusBonus;
+      bonusLabel = `騰躍 PLUS 達成 (+$${specialBonus.toLocaleString()})`;
+      diffBadge.innerText = `恭喜已達最高等級【騰躍 PLUS 版】！(享全額最高獎勵 $${specialBonus.toLocaleString()})`;
+      pWrap.style.background = "rgba(34, 197, 94, 0.08)";
+      pWrap.style.borderColor = "rgba(74, 222, 128, 0.4)";
+      diffBadge.style.color = "#4ade80";
+      pBar.style.background = "linear-gradient(90deg, #16a34a, #4ade80)";
+      pBar.style.width = "100%";
+      pPercent.innerText = "100% (已達頂標)";
+    } else if (accRecognized >= grade.threshold) {
+      specialBonus = grade.specialBonus;
+      bonusLabel = `騰躍特仕 達成 (+$${specialBonus.toLocaleString()})`;
+      const diffToPlus = grade.plusThreshold - accRecognized;
+      const bonusGap = grade.plusBonus - grade.specialBonus;
+      const percent = Math.min(100, Math.round((accRecognized / grade.plusThreshold) * 100));
+      diffBadge.innerText = `已達【騰躍特仕】！還差 $${diffToPlus.toLocaleString()} 配件可升級【騰躍 PLUS】(獎勵再加 $${bonusGap.toLocaleString()})`;
+      pWrap.style.background = "rgba(59, 130, 246, 0.08)";
+      pWrap.style.borderColor = "rgba(96, 165, 250, 0.4)";
+      diffBadge.style.color = "#60a5fa";
+      pBar.style.background = "linear-gradient(90deg, #2563eb, #60a5fa)";
+      pBar.style.width = `${percent}%`;
+      pPercent.innerText = `${percent}% (目標 PLUS $${grade.plusThreshold.toLocaleString()})`;
+    } else {
+      const diffToNormal = grade.threshold - accRecognized;
+      const percent = Math.min(100, Math.round((accRecognized / grade.threshold) * 100));
+      diffBadge.innerText = `還差 $${diffToNormal.toLocaleString()} 配件可達【騰躍特仕門檻】(可現領 $${grade.specialBonus.toLocaleString()} 專案獎勵)`;
+      pWrap.style.background = "rgba(197, 168, 128, 0.08)";
+      pWrap.style.borderColor = "rgba(197, 168, 128, 0.35)";
+      diffBadge.style.color = "var(--lexus-gold-bright)";
+      pBar.style.background = "linear-gradient(90deg, var(--lexus-gold-dark), var(--lexus-gold-bright))";
+      pBar.style.width = `${percent}%`;
+      pPercent.innerText = `${percent}% (目標騰躍 $${grade.threshold.toLocaleString()})`;
+    }
+    document.getElementById("badgeSpecialReward").innerText = bonusLabel;
+
+    // 4. 活動專案加碼 (雙十 / LM COMBO / LS 未超折)
+    let eventBonus = 0;
+    if (grade.allowEarlyBird) {
+      eventBonus += parseInt(document.getElementById("earlyBirdSelect").value || 0);
+    }
+    if (grade.isLM) {
+      eventBonus += parseInt(document.getElementById("lmComboSelect").value || 0);
+    }
+    if (grade.isLS && document.getElementById("lsBonusMet").checked) {
+      eventBonus += 30000;
+    }
+
+    // 5. 個人職級獎勵
+    let tierBonus = parseInt(document.getElementById("tierSelect").value || 0);
+
+    // 6. 總計結算
+    const totalCost = grade.listPrice + accCost;
+    const maxDiscount = baseDiscount + eventBonus + specialBonus + tierBonus;
+    const floorPrice = totalCost - maxDiscount;
+
+    // 介面渲染
+    document.getElementById("txtListPrice").innerText = `$${grade.listPrice.toLocaleString()}`;
+    document.getElementById("txtAccCost").innerText = `+$${accCost.toLocaleString()}`;
+    document.getElementById("txtTotalCost").innerText = `$${totalCost.toLocaleString()}`;
+
+    document.getElementById("txtBaseDiscount").innerText = `-$${baseDiscount.toLocaleString()}`;
+    document.getElementById("txtEventBonus").innerText = `-$${eventBonus.toLocaleString()}`;
+    document.getElementById("txtSpecialReward").innerText = `-$${specialBonus.toLocaleString()}`;
+    document.getElementById("txtTierReward").innerText = `-$${tierBonus.toLocaleString()}`;
+    document.getElementById("txtMaxDiscount").innerText = `-$${maxDiscount.toLocaleString()}`;
+
+    document.getElementById("txtFloorPrice").innerText = `$${floorPrice.toLocaleString()}`;
+
+    // 7. 客戶出價比對
+    const targetVal = document.getElementById("targetPrice").value;
+    const compBox = document.getElementById("compareResult");
+    if (targetVal && targetVal > 0) {
+      const targetPrice = parseInt(targetVal);
+      const diff = targetPrice - floorPrice;
+      compBox.style.display = "block";
+      if (diff >= 0) {
+        compBox.className = "result-alert alert-success";
+        compBox.innerHTML = `可合規承做！<br><span style="font-size:0.85rem">預估利潤空間：$${diff.toLocaleString()} 元</span>`;
+      } else {
+        compBox.className = "result-alert alert-danger";
+        compBox.innerHTML = `嚴重超折倒賠！<br><span style="font-size:0.85rem">超出底線需自行倒貼超折：$${Math.abs(diff).toLocaleString()} 元</span>`;
+      }
+    } else {
+      compBox.style.display = "none";
+    }
+  } catch(e) {
+    console.error("calculate error: ", e);
   }
 }
+
+// 萬無一失的雙重掛載與即時就緒執行
+function initApp() {
+  try {
+    const modelSel = document.getElementById("modelSelect");
+    if (!modelSel) return;
+    
+    // 若特定瀏覽器核心遺失 options，自動再次填補
+    if (modelSel.children.length === 0) {
+      for (let key in vehicleData) {
+        let opt = document.createElement("option");
+        opt.value = key;
+        opt.innerText = vehicleData[key].name;
+        modelSel.appendChild(opt);
+      }
+    }
+    onGradeChange();
+  } catch(e) {
+    console.error("initApp error: ", e);
+  }
+}
+
+// 立即執行 + 事件備援
+initApp();
+document.addEventListener("DOMContentLoaded", initApp);
+window.addEventListener("load", initApp);
 </script>
 
 </body>
