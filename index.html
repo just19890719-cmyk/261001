@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LEXUS 全車系販促底價與特仕菜單利潤試算系統</title>
+  <style>
+    :root {
+      --primary: #1a2530;
+      --accent: #b89758;
+      --bg: #f4f6f9;
+      --card-bg: #ffffff;
+      --text: #333333;
+      --border: #e2e8f0;
+      --danger: #e53e3e;
+      --success: #38a169;
+    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; }
+    body { background-color: var(--bg); color: var(--text); margin: 0; padding: 12px; }
+    .container { max-width: 1020px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 14px; }
+    @media (min-width: 800px) {
+      .container { grid-template-columns: 1fr 1fr; }
+      .full-width { grid-column: span 2; }
+    }
+    .card { background: var(--card-bg); border-radius: 10px; padding: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.06); border: 1px solid var(--border); }
+    h2, h3 { margin-top: 0; color: var(--primary); }
+    h2 { font-size: 1.2rem; border-bottom: 2px solid var(--accent); padding-bottom: 8px; margin-bottom: 10px; }
+    h3 { font-size: 1rem; margin-bottom: 10px; }
+    label { display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 5px; color: #2d3748; }
+    select, input[type="number"] { width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.95rem; margin-bottom: 10px; outline: none; background: #fff; }
+    select:focus, input:focus { border-color: var(--accent); }
+    .row-flex { display: flex; gap: 10px; }
+    .row-flex > div { flex: 1; }
+    .checkbox-group { display: flex; flex-direction: column; gap: 8px; }
+    .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 0.88rem; font-weight: normal; cursor: pointer; }
+    .checkbox-item input { width: 17px; height: 17px; margin: 0; cursor: pointer; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: bold; background: #edf2f7; color: #4a5568; }
+    .calc-box { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+    .calc-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 0.88rem; }
+    .calc-row.total { font-weight: bold; font-size: 1.05rem; border-top: 1px dashed var(--border); padding-top: 8px; margin-top: 8px; color: var(--primary); }
+    .highlight-val { color: var(--accent); font-weight: bold; }
+    .result-alert { border-radius: 8px; padding: 12px; font-weight: bold; text-align: center; font-size: 1.05rem; margin-top: 10px; }
+    .alert-success { background: #c6f6d5; color: #22543d; }
+    .alert-danger { background: #fed7d7; color: #9b2c2c; }
+    .note-box { font-size: 0.8rem; color: #718096; line-height: 1.4; margin-top: 4px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- 頁頭 -->
+  <div class="card full-width" style="text-align: center; border-top: 4px solid var(--accent);">
+    <h2>LEXUS 全車系 10月業專販促底價與特仕試算器</h2>
+    <div style="font-size: 0.82rem; color: #718096;">加價購配件認列修正：完全以表列「業代價」認列特仕門檻・專案成本僅收「優惠價」</div>
+  </div>
+
+  <!-- 車型與年式設定 -->
+  <div class="card">
+    <h3>1. 車型、等級與年式選擇</h3>
+    <label>選擇車種車型</label>
+    <select id="modelSelect" onchange="onModelChange()"></select>
+
+    <div class="row-flex">
+      <div>
+        <label>等級規格</label>
+        <select id="gradeSelect" onchange="onGradeChange()"></select>
+      </div>
+      <div>
+        <label>車輛年式</label>
+        <select id="yearSelect" onchange="calculate()">
+          <option value="year26">正 26 年式</option>
+          <option value="year27">準 27 年式</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- NX200 專用基本條件開關 -->
+    <div id="nxConditionWrap" style="display:none; margin-bottom: 10px;">
+      <div style="background: #fffaf0; border: 1px solid #fbd38d; border-radius: 8px; padding: 12px;">
+        <label class="checkbox-item" style="color: #c05621; font-weight: bold; margin-bottom: 4px;">
+          <input type="checkbox" id="nxTargetMet" onchange="calculate()" checked>
+          <span>NX200 基本條件達標：10月份現訂交車「除 NX200 以外」達 2 台(含)以上</span>
+        </label>
+        <div id="nxTargetDesc" style="font-size: 0.82rem; color: #744210; line-height: 1.5; margin-left: 25px;">
+          • <strong>勾選【達標 (有)】</strong>：適用公司表列最高優惠 <strong id="txtNxYes">$140,000</strong>。<br>
+          • <strong>未勾選【未達標 (無)】</strong>：核發折讓金額降為 <strong id="txtNxNo">$125,000</strong>（立即減少 $15,000 額度）。
+        </div>
+      </div>
+    </div>
+
+    <!-- LS 未超折加發 3 萬 -->
+    <div id="lsConditionWrap" style="display:none; margin-bottom: 10px;">
+      <label class="checkbox-item" style="background: #e2e8f0; padding: 6px 8px; border-radius: 4px;">
+        <input type="checkbox" id="lsBonusMet" onchange="calculate()" checked>
+        <span>LS 車系未超折(含平折)每台加發 $30,000</span>
+      </label>
+    </div>
+  </div>
+
+  <!-- 販促專案與累台獎金 -->
+  <div class="card">
+    <h3>2. 專案活動與業務獎金提撥</h3>
+    
+    <!-- 雙十連發早鳥 -->
+    <div id="earlyBirdWrap" style="margin-bottom: 10px;">
+      <label>雙十連發・訂單爆發專案 (全車系排除 NX200)</label>
+      <select id="earlyBirdSelect" onchange="calculate()">
+        <option value="0">未符合 / 超過檔期 ($0)</option>
+        <option value="10000">10/1~10/8 受訂 (第1台: $10,000)</option>
+        <option value="25000" selected>10/1~10/8 受訂 (第2台: $25,000)</option>
+        <option value="8000">10/9~10/15 受訂 (第1台: $8,000)</option>
+        <option value="15000">10/9~10/15 受訂 (第2台: $15,000)</option>
+      </select>
+    </div>
+
+    <!-- LM 專用 COMBO 升級 -->
+    <div id="lmComboWrap" style="display:none; margin-bottom: 10px;">
+      <label>LM 升級 COMBO 專案 (擇一)</label>
+      <select id="lmComboSelect" onchange="calculate()">
+        <option value="0">無升級 ($20,000獎金)</option>
+        <option value="30000">騰躍精裝 市價$120,000 ($30,000獎金)</option>
+        <option value="40000" selected>Damper 防傾減震套件 ($40,000獎金+1萬點)</option>
+      </select>
+    </div>
+
+    <label>個人職級與全月累台銷售獎勵提撥</label>
+    <select id="tierSelect" onchange="calculate()">
+      <option value="0">不貼個人銷售獎金 ($0)</option>
+      <option value="5000">1~2台 / 經理、副理、課長 ($5,000)</option>
+      <option value="10000">3~4台 / 經理級以上 ($10,000)</option>
+      <option value="12000">5~6台 / 主管級 ($12,000)</option>
+      <option value="15000">7~8台 / 協理、經理 ($15,000)</option>
+      <option value="18000" selected>9台以上頂格 / 協理、經理 ($18,000)</option>
+    </select>
+  </div>
+
+  <!-- 原廠加價購專案 -->
+  <div class="card full-width">
+    <h3>3. 原廠配件販促加價購 (依表列業代價全額認列特仕門檻)</h3>
+    <div id="promoBox" class="note-box"></div>
+  </div>
+
+  <!-- 自選精裝配件 -->
+  <div class="card full-width">
+    <h3>4. 常用原廠配件精品加選</h3>
+    <div style="display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; align-items: center;">
+      <span class="badge" id="badgeThreshold">騰躍門檻: -</span>
+      <span class="badge" id="badgePlusThreshold">PLUS門檻: -</span>
+      <span class="badge" id="badgeCurrentRec" style="background:#e2e8f0; color:#2d3748;">認列累積: $0</span>
+      <span class="badge" id="badgeSpecialReward" style="background:#e9d8fd; color:#553c9a;">特仕獎勵: $0</span>
+      <span class="badge" id="badgeDiffToThreshold" style="background:#fffaf0; color:#c05621; border: 1px solid #fbd38d; font-weight: bold;">門檻差額: -</span>
+    </div>
+    <div id="accList" class="checkbox-group" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));"></div>
+  </div>
+
+  <!-- 計算總結 -->
+  <div class="card full-width">
+    <h3>5. 底價清算與客戶菜單對決</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+      
+      <div class="calc-box">
+        <div style="font-weight: bold; margin-bottom: 8px; color: var(--primary);">【實質進貨成本與折讓清單】</div>
+        <div class="calc-row"><span>新車牌價：</span><span id="txtListPrice">$0</span></div>
+        <div class="calc-row"><span>配件實質成本合計：</span><span id="txtAccCost">$0</span></div>
+        <div class="calc-row total"><span>整車成本總值：</span><span id="txtTotalCost">$0</span></div>
+        <div style="margin: 8px 0; border-top: 1px dashed var(--border);"></div>
+        <div class="calc-row"><span>公司表列可優惠金額：</span><span id="txtBaseDiscount" class="highlight-val">-$0</span></div>
+        <div class="calc-row"><span>專案加碼 (雙十/LM/RZ)：</span><span id="txtEventBonus" class="highlight-val">-$0</span></div>
+        <div class="calc-row"><span>特仕精裝獎勵：</span><span id="txtSpecialReward" class="highlight-val">-$0</span></div>
+        <div class="calc-row"><span>個人累台獎勵全貼：</span><span id="txtTierReward" class="highlight-val">-$0</span></div>
+        <div class="calc-row total"><span>最大折讓總額：</span><span id="txtMaxDiscount" class="highlight-val">-$0</span></div>
+      </div>
+
+      <div class="calc-box" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="font-weight: bold; margin-bottom: 8px; color: var(--primary);">【談判底線與合約驗證】</div>
+          <div class="calc-row"><span>全讓利極限合約價：</span><span id="txtFloorPrice" style="font-size: 1.3rem; font-weight: bold; color: var(--accent);">$0</span></div>
+          <div class="note-box" style="margin-bottom: 12px;">（成交價若低於此金額，超出部分需由專員自願薪資倒扣）</div>
+
+          <label>輸入客人提出的目標成交價 (元)</label>
+          <input type="number" id="targetPrice" placeholder="輸入成交價，例如：1390000" oninput="calculate()">
+        </div>
+
+        <div id="compareResult" class="result-alert" style="display: none;"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// 全車系完整資料庫 (依據最新 9月精裝表圖檔與 10月業專辦法完整校準)
+const vehicleData = {
+  "UX": {
+    name: "UX 車系",
+    grades: {
+      "ux300h_deluxe": {
+        name: "UX300h 豪華版",
+        listPrice: 1499000,
+        discounts: { year26: 100000, year27: 100000 },
+        isNX200: false,
+        allowEarlyBird: true,
+        threshold: 96000, plusThreshold: 112000,
+        specialBonus: 10000, plusBonus: 20000,
+        promoType: "single", // 單選互斥
+        promos: [
+          { id: "ux_promo1", name: "PVM環景 + MirrorPlus + GPS", cost: 10000, recognizeVal: 67200, desc: "專案優惠價 $10,000 (表列業代價認列 $67,200)" }
+        ],
+        accessories: [
+          { id: "ux_hud", name: "TFT HUD總成 + CAN訊號轉接線", cost: 12000 },
+          { id: "ux_uv", name: "UV光觸媒 + 負離子淨化系統", cost: 5600 },
+          { id: "ux_ctrl", name: "智慧型安全電控系統(CAN)", cost: 6500 },
+          { id: "ux_fold", name: "收鏡系統(實體線)", cost: 3800 },
+          { id: "ux_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "ux_coat", name: "LEXUS 鈦鍍膜-小型", cost: 16000 },
+          { id: "ux_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
+        ]
+      }
+    }
+  },
+  "NX": {
+    name: "NX 車系",
+    grades: {
+      "nx200_elite": {
+        name: "NX200 菁英版",
+        listPrice: 1710000,
+        discounts: {
+          year26: { yes: 120000, no: 105000 },
+          year27: { yes: 120000, no: 105000 }
+        },
+        isNX200: true,
+        allowEarlyBird: false,
+        threshold: 98000, plusThreshold: 118000,
+        specialBonus: 5000, plusBonus: 15000,
+        promoType: "single", // 互斥單選
+        promos: [
+          { id: "nx200_p1", name: "方案一：PVM環景 + AI導航娛樂升級套件(含圖資)", cost: 0, recognizeVal: 82700, desc: "專案優惠價 $0 (表列業代價認列 $82,700) ｜ 菁英/豪華均可選" },
+          { id: "nx200_p2", name: "方案二：PVM環景 + Mirror Plus + GPS", cost: 60000, recognizeVal: 70300, desc: "專案優惠價 $60,000 (表列業代價認列 $70,300) ｜ 菁英/豪華均可選" }
+        ],
+        accessories: [
+          { id: "nx_pvm", name: "環景影像系統 PVM (含錄影盒)", cost: 42700 },
+          { id: "nx_ai_nav", name: "AI導航娛樂升級套件(PVM NX200)", cost: 26000 },
+          { id: "nx_nav_map", name: "智慧導航圖資", cost: 14000 },
+          { id: "nx_seat", name: "通風座椅系統 LH (NX)", cost: 23500 },
+          { id: "nx_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "nx_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 },
+          { id: "nx_hud", name: "TFT HUD新型總成+轉接線", cost: 12300 },
+          { id: "nx_coat", name: "LEXUS 鈦鍍膜-中型", cost: 18000 },
+          { id: "nx_uv", name: "UV光觸媒 + 負離子淨化系統", cost: 5600 }
+        ]
+      },
+      "nx200_deluxe": {
+        name: "NX200 豪華版",
+        listPrice: 1810000,
+        discounts: {
+          year26: { yes: 140000, no: 125000 },
+          year27: { yes: 140000, no: 125000 }
+        },
+        isNX200: true,
+        allowEarlyBird: false,
+        threshold: 98000, plusThreshold: 118000,
+        specialBonus: 5000, plusBonus: 15000,
+        promoType: "single", // 互斥單選
+        promos: [
+          { id: "nx200_p1", name: "方案一：PVM環景 + AI導航娛樂升級套件(含圖資)", cost: 0, recognizeVal: 82700, desc: "專案優惠價 $0 (表列業代價認列 $82,700) ｜ 菁英/豪華均可選" },
+          { id: "nx200_p2", name: "方案二：PVM環景 + Mirror Plus + GPS", cost: 60000, recognizeVal: 70300, desc: "專案優惠價 $60,000 (表列業代價認列 $70,300) ｜ 菁英/豪華均可選" }
+        ],
+        accessories: [
+          { id: "nx_pvm", name: "環景影像系統 PVM (含錄影盒)", cost: 42700 },
+          { id: "nx_ai_nav", name: "AI導航娛樂升級套件(PVM NX200)", cost: 26000 },
+          { id: "nx_nav_map", name: "智慧導航圖資", cost: 14000 },
+          { id: "nx_seat", name: "通風座椅系統 LH (NX)", cost: 23500 },
+          { id: "nx_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "nx_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 },
+          { id: "nx_hud", name: "TFT HUD新型總成+轉接線", cost: 12300 },
+          { id: "nx_coat", name: "LEXUS 鈦鍍膜-中型", cost: 18000 },
+          { id: "nx_uv", name: "UV光觸媒 + 負離子淨化系統", cost: 5600 }
+        ]
+      },
+      "nx350_overtrail": {
+        name: "NX350 Overtrail",
+        listPrice: 2490000,
+        discounts: { year26: 240000, year27: 190000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 98000, plusThreshold: 118000, specialBonus: 10000, plusBonus: 20000,
+        promos: [],
+        accessories: [
+          { id: "nx_ot_pvm", name: "環景影像系統 PVM (含錄影盒)", cost: 42700 },
+          { id: "nx_ot_mirror", name: "Mirror Plus + GPS", cost: 27600 },
+          { id: "nx_ot_ctrl", name: "智慧型安全電控系統(CAN)", cost: 7100 },
+          { id: "nx_ot_uv", name: "UV光觸媒 + 負離子淨化系統", cost: 5600 },
+          { id: "nx_ot_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "nx_ot_coat", name: "LEXUS 鈦鍍膜-中型", cost: 18000 },
+          { id: "nx_ot_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
+        ]
+      },
+      "nx350_fsport": {
+        name: "NX350 F / NX350h旗艦 / NX450h+ F",
+        listPrice: 2630000,
+        discounts: { year26: 260000, year27: 210000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 75000, plusThreshold: 92000, specialBonus: 10000, plusBonus: 20000,
+        promos: [],
+        accessories: [
+          { id: "nx_f_dvr", name: "CARMAX Pro DVR 1.0", cost: 10400 },
+          { id: "nx_f_step", name: "NX 電動車側踏板", cost: 39900 },
+          { id: "nx_f_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "nx_f_coat", name: "LEXUS 鈦鍍膜-中型", cost: 18000 },
+          { id: "nx_f_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
+        ]
+      },
+      "nx350h_deluxe": {
+        name: "NX350h 豪華版 / 頂級版",
+        listPrice: 2070000,
+        discounts: { year26: 170000, year27: 140000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 98000, plusThreshold: 118000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          // 業代價：42,700 + 24,200 = 66,900；優惠價：15,000
+          { id: "nx350h_p1", name: "PVM環景 + 全車3M極黑/FSK冰鑽", cost: 15000, recognizeVal: 66900, desc: "專案優惠價 $15,000 (表列業代價認列 $66,900)" }
+        ],
+        accessories: [
+          { id: "nx_mirror", name: "Mirror Plus 高清電子後視鏡+GPS", cost: 27600 },
+          { id: "nx_hud", name: "TFT HUD新型總成+轉接線", cost: 12300 },
+          { id: "nx_coat", name: "LEXUS 鈦鍍膜(中型)", cost: 18000 }
+        ]
+      },
+      "nx450h_deluxe": {
+        name: "NX450h+ 豪華版",
+        listPrice: 2830000,
+        discounts: { year26: 240000, year27: 220000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 98000, plusThreshold: 118000, specialBonus: 10000, plusBonus: 20000,
+        promos: [],
+        accessories: [
+          { id: "nx_pvm_450", name: "環景影像系統 PVM (含錄影盒)", cost: 42700 },
+          { id: "nx_mirror_450", name: "Mirror Plus 高清電子後視鏡+GPS", cost: 27600 },
+          { id: "nx_hud_450", name: "TFT HUD新型總成+轉接線", cost: 12300 },
+          { id: "nx_coat_450", name: "LEXUS 鈦鍍膜(中型)", cost: 18000 },
+          { id: "nx_3m_450", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
+        ]
+      }
+    }
+  },
+  "RX": {
+    name: "RX 車系",
+    grades: {
+      "rx350_deluxe": {
+        name: "RX350 豪華版",
+        listPrice: 2550000,
+        discounts: { year26: 240000, year27: 210000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 90000, plusThreshold: 120000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "rx_step_promo", name: "電動車側踏 + 全車3M極黑", cost: 45000, recognizeVal: 70200, desc: "專案優惠價 $45,000 (表列業代價認列 $70,200)" }
+        ],
+        accessories: [
+          { id: "rx_mirror", name: "MirrorPlus 高清電子後視鏡+GPS", cost: 27600 },
+          { id: "rx_hud", name: "RX TFT HUD新型總成", cost: 10800 },
+          { id: "rx_tail", name: "光標感應尾門系統(CAN)", cost: 10000 },
+          { id: "rx_ctrl", name: "智慧型安全電控系統+轉接線", cost: 8600 },
+          { id: "rx_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "rx_coat", name: "LEXUS 鈦鍍膜-大型", cost: 20000 }
+        ]
+      },
+      "rx350_top": {
+        name: "RX350 頂級版 / 旗艦版",
+        listPrice: 2950000,
+        discounts: { year26: 280000, year27: 250000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 85000, plusThreshold: 105000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "rx_top_p1", name: "安全電控/DVR (二選一) + 全車3M極黑", cost: 15000, recognizeVal: 34600, desc: "專案優惠價 $15,000 (表列業代價認列 $34,600)" }
+        ],
+        accessories: [
+          { id: "rx_top_dvr", name: "CARMAX Pro DVR 1.0", cost: 10400 },
+          { id: "rx_top_step", name: "RX 電動車側踏板", cost: 50800 },
+          { id: "rx_top_tail", name: "光標感應尾門系統(CAN)", cost: 10000 },
+          { id: "rx_top_ctrl", name: "智慧型安全電控系統(CAN)", cost: 7100 },
+          { id: "rx_top_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "rx_top_coat", name: "LEXUS 鈦鍍膜-大型", cost: 20000 },
+          { id: "rx_top_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
+        ]
+      },
+      "rx350h_deluxe": {
+        name: "RX350h 豪華版",
+        listPrice: 2650000,
+        discounts: { year26: 240000, year27: 210000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 90000, plusThreshold: 120000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "rx_step_promo_h", name: "電動車側踏 + 全車3M極黑", cost: 45000, recognizeVal: 70200, desc: "專案優惠價 $45,000 (表列業代價認列 $70,200)" }
+        ],
+        accessories: [
+          { id: "rxh_mirror", name: "MirrorPlus 高清電子後視鏡+GPS", cost: 27600 },
+          { id: "rxh_hud", name: "RX TFT HUD新型總成", cost: 10800 },
+          { id: "rxh_tail", name: "光標感應尾門系統(CAN)", cost: 10000 },
+          { id: "rxh_ctrl", name: "安全電控系統+轉接線", cost: 8600 },
+          { id: "rxh_coat", name: "LEXUS 鈦鍍膜-大型", cost: 20000 }
+        ]
+      },
+      "rx350h_top": {
+        name: "RX350h 頂級版 / 旗艦版",
+        listPrice: 3150000,
+        discounts: { year26: 280000, year27: 250000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 85000, plusThreshold: 105000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "rx_top_p2", name: "電控/DVR (二選一) + 全車3M極黑", cost: 15000, recognizeVal: 34600, desc: "專案優惠價 $15,000 (表列業代價認列 $34,600)" }
+        ],
+        accessories: [
+          { id: "rxh_top_step", name: "RX 電動車側踏板", cost: 50800 },
+          { id: "rxh_top_tail", name: "光標感應尾門系統(CAN)", cost: 10000 },
+          { id: "rxh_top_coat", name: "LEXUS 鈦鍍膜-大型", cost: 20000 }
+        ]
+      },
+      "rx450h_deluxe": {
+        name: "RX450h+ / 500h",
+        listPrice: 3250000,
+        discounts: { year26: 230000, year27: 210000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 85000, plusThreshold: 105000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "rx_450_3m", name: "全車 3M極黑/FSK冰鑽 加購", cost: 9000, recognizeVal: 24200, desc: "專案優惠價 $9,000 (表列業代價認列 $24,200)" }
+        ],
+        accessories: [
+          { id: "rx_450_step", name: "RX 電動車側踏板", cost: 50800 },
+          { id: "rx_450_coat", name: "LEXUS 鈦鍍膜-大型", cost: 20000 }
+        ]
+      }
+    }
+  },
+  "LBX": {
+    name: "LBX 車系",
+    grades: {
+      "lbx_active_relax": {
+        name: "LBX ACTIVE(+) / Relax",
+        listPrice: 1299000,
+        discounts: { year26: 30000, year27: 30000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 95000, plusThreshold: 115000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "lbx_mirror_promo", name: "2.0 電子後視鏡系統 專案特惠", cost: 0, recognizeVal: 26600, desc: "專案優惠價 $0 (表列業代價認列 $26,600)" }
+        ],
+        accessories: [
+          { id: "lbx_pvm", name: "LBX 環景影像顯示系統", cost: 42700 },
+          { id: "lbx_mirror", name: "Mirror Plus高清電子後視鏡(LBX)+GPS", cost: 27600 },
+          { id: "lbx_hud", name: "TFT HUD + CAN訊號轉接線", cost: 12000 },
+          { id: "lbx_ctrl", name: "智慧型安全電控系統(CAN)", cost: 7100 },
+          { id: "lbx_light", name: "二合一尾門燈(照明+警示)", cost: 2900 },
+          { id: "lbx_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "lbx_coat", name: "LEXUS 鈦鍍膜-小型", cost: 16000 },
+          { id: "lbx_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
+        ]
+      },
+      "lbx_cool": {
+        name: "LBX Cool",
+        listPrice: 1430000,
+        discounts: { year26: 30000, year27: 30000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 95000, plusThreshold: 108000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "lbx_cool_mirror_promo", name: "2.0 電子後視鏡系統 專案特惠", cost: 0, recognizeVal: 26600, desc: "專案優惠價 $0 (表列業代價認列 $26,600)" }
+        ],
+        accessories: [
+          { id: "lbx_c_pvm", name: "LBX 環景影像顯示系統", cost: 42700 },
+          { id: "lbx_c_mirror", name: "Mirror Plus高清電子後視鏡(LBX)+GPS", cost: 27600 },
+          { id: "lbx_c_ctrl", name: "智慧型安全電控系統(CAN)", cost: 7100 },
+          { id: "lbx_c_light", name: "二合一尾門燈(照明+警示)", cost: 2900 },
+          { id: "lbx_c_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "lbx_c_coat", name: "LEXUS 鈦鍍膜-小型", cost: 16000 },
+          { id: "lbx_c_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
+        ]
+      }
+    }
+  },
+  "ES": {
+    name: "ES 車系",
+    grades: {
+      "es300h_deluxe": {
+        name: "ES300h 豪華 / 頂級版",
+        listPrice: 1770000,
+        discounts: { year26: 40000, year27: 40000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 68000, plusThreshold: 79000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "es_dvr_3m", name: "DVR + 3M極黑隔熱紙 專案特惠", cost: 0, recognizeVal: 34600, desc: "專案優惠價 $0 (表列業代價認列 $34,600)" }
+        ],
+        accessories: [
+          { id: "es_dvr", name: "CARMAX Pro DVR 1.0", cost: 10400 },
+          { id: "es_bar", name: "ES 拉桿三件套組", cost: 18000 },
+          { id: "es_ctrl", name: "智慧型安全電控系統 + CAN轉接線", cost: 7100 },
+          { id: "es_proj", name: "LEXUS 動態投影照地燈", cost: 3800 },
+          { id: "es_door_light", name: "車門防撞警示燈", cost: 2900 },
+          { id: "es_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "es_coat", name: "LEXUS 鈦鍍膜-中型", cost: 18000 },
+          { id: "es_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 }
+        ]
+      },
+      "es500e_top": {
+        name: "ES500e 頂級 / 旗艦版",
+        listPrice: 2200000,
+        discounts: { year26: 100000, year27: 100000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 68000, plusThreshold: 79000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "es5_dvr_3m", name: "DVR + 3M極黑隔熱紙 專案特惠", cost: 0, recognizeVal: 34600, desc: "專案優惠價 $0 (表列業代價認列 $34,600)" }
+        ],
+        accessories: [
+          { id: "es5_dvr", name: "CARMAX Pro DVR 1.0", cost: 10400 },
+          { id: "es5_ctrl", name: "智慧型安全電控系統 + CAN轉接線", cost: 7100 },
+          { id: "es5_door_light", name: "車門防撞警示燈", cost: 2900 },
+          { id: "es5_proj", name: "LEXUS 動態投影照地燈", cost: 3800 },
+          { id: "es5_vest", name: "緊急救援 LED 背心", cost: 900 },
+          { id: "es5_coat", name: "LEXUS 鈦鍍膜-中型", cost: 18000 },
+          { id: "es5_3m", name: "3M 極透隔熱紙 (MA70+MA40)", cost: 32000 }
+        ]
+      }
+    }
+  },
+  "LM": {
+    name: "LM 車系",
+    grades: {
+      "lm_4seat": {
+        name: "LM 4人座 (350h / 500h)",
+        listPrice: 5650000,
+        discounts: { year26: 0, year27: 0 },
+        isNX200: false, allowEarlyBird: false,
+        isLM: true,
+        threshold: 65000, plusThreshold: 999999, specialBonus: 10000, plusBonus: 10000,
+        promos: [],
+        accessories: [
+          { id: "lm4_sdvr", name: "S-DVR行車紀錄器(含測速照相)", cost: 6000 },
+          { id: "lm4_led_door", name: "LED車門照地燈", cost: 1400 },
+          { id: "lm4_door_light", name: "防撞警示燈-前門專用", cost: 2900 },
+          { id: "lm4_coat", name: "LEXUS 鈦鍍膜-MPV", cost: 25000 },
+          { id: "lm4_3m_body", name: "3M 隔熱紙-極黑MB45車身(MPV)", cost: 19400 },
+          { id: "lm4_3m_front", name: "3M 隔熱紙-極黑MB75前檔(MPV)", cost: 12100 }
+        ]
+      },
+      "lm_6seat": {
+        name: "LM 6人座 (350h / 500h)",
+        listPrice: 4390000,
+        discounts: { year26: 0, year27: 0 },
+        isNX200: false, allowEarlyBird: false,
+        isLM: true,
+        threshold: 70000, plusThreshold: 999999, specialBonus: 10000, plusBonus: 10000,
+        promos: [],
+        accessories: [
+          { id: "lm6_dvr", name: "CARMAX Pro DVR 1.0 LM", cost: 13000 },
+          { id: "lm6_carpet", name: "LEXUS 車側動態迎賓光毯", cost: 10500 },
+          { id: "lm6_door_light", name: "防撞警示燈-前門專用", cost: 2900 },
+          { id: "lm6_coat", name: "LEXUS 鈦鍍膜-MPV", cost: 25000 },
+          { id: "lm6_3m_body", name: "3M 隔熱紙-極黑MB45車身(MPV)", cost: 19400 },
+          { id: "lm6_3m_front", name: "3M 隔熱紙-極黑MB75前檔(MPV)", cost: 12100 }
+        ]
+      }
+    }
+  },
+  "IS": {
+    name: "IS 車系",
+    grades: {
+      "is300h_fsport": {
+        name: "IS300h F SPORT",
+        listPrice: 1990000,
+        discounts: { year26: 80000, year27: 80000 },
+        isNX200: false, allowEarlyBird: true,
+        threshold: 80000, plusThreshold: 100000, specialBonus: 10000, plusBonus: 20000,
+        promos: [],
+        accessories: [
+          { id: "is_3m", name: "3M 極黑奈米陶瓷隔熱紙", cost: 24200 },
+          { id: "is_coat", name: "LEXUS 鈦鍍膜(中型)", cost: 18000 }
+        ]
+      }
+    }
+  },
+  "RZ": {
+    name: "RZ 車系",
+    grades: {
+      "rz500e_all": {
+        name: "RZ500e / 550e 電力十足專案",
+        listPrice: 2300000,
+        discounts: { year26: 100000, year27: 100000 },
+        isNX200: false, allowEarlyBird: false,
+        isRZ: true,
+        threshold: 80000, plusThreshold: 100000, specialBonus: 10000, plusBonus: 20000,
+        promos: [
+          { id: "rz_charge_3m", name: "慢充A/C設備 + 3M極黑 (高都販促 $100,000/台)", cost: 0, recognizeVal: 83100, desc: "送充電樁($33,600)+極黑($49,500)" }
+        ],
+        accessories: []
+      }
+    }
+  },
+  "LS": {
+    name: "LS 車系",
+    grades: {
+      "ls500h": {
+        name: "LS500h 旗艦版",
+        listPrice: 5000000,
+        discounts: { year26: 150000, year27: 150000 },
+        isNX200: false, allowEarlyBird: false,
+        isLS: true,
+        threshold: 80000, plusThreshold: 100000, specialBonus: 10000, plusBonus: 20000,
+        promos: [],
+        accessories: []
+      }
+    }
+  }
+};
+window.onload = function() {
+  const modelSel = document.getElementById("modelSelect");
+  for (let key in vehicleData) {
+    let opt = document.createElement("option");
+    opt.value = key;
+    opt.innerText = vehicleData[key].name;
+    modelSel.appendChild(opt);
+  }
+  onModelChange();
+};
+
+function onModelChange() {
+  const modelKey = document.getElementById("modelSelect").value;
+  const grades = vehicleData[modelKey].grades;
+  const gradeSel = document.getElementById("gradeSelect");
+  gradeSel.innerHTML = "";
+  for (let gKey in grades) {
+    let opt = document.createElement("option");
+    opt.value = gKey;
+    opt.innerText = grades[gKey].name;
+    gradeSel.appendChild(opt);
+  }
+  onGradeChange();
+}
+
+function onGradeChange() {
+  const modelKey = document.getElementById("modelSelect").value;
+  const gradeKey = document.getElementById("gradeSelect").value;
+  const grade = vehicleData[modelKey].grades[gradeKey];
+  const year = document.getElementById("yearSelect").value;
+
+  // 1. NX 專用條件動態文字
+  if (grade.isNX200) {
+    document.getElementById("nxConditionWrap").style.display = "block";
+    const yesVal = grade.discounts[year].yes;
+    const noVal = grade.discounts[year].no;
+    document.getElementById("txtNxYes").innerText = `$${yesVal.toLocaleString()}`;
+    document.getElementById("txtNxNo").innerText = `$${noVal.toLocaleString()}`;
+  } else {
+    document.getElementById("nxConditionWrap").style.display = "none";
+  }
+
+  // 2. 雙十連發
+  const earlyBirdWrap = document.getElementById("earlyBirdWrap");
+  if (!grade.allowEarlyBird) {
+    earlyBirdWrap.style.display = "none";
+    document.getElementById("earlyBirdSelect").value = "0";
+  } else {
+    earlyBirdWrap.style.display = "block";
+    document.getElementById("earlyBirdSelect").value = "25000";
+  }
+
+  // 3. LM / LS 專屬設定
+  document.getElementById("lmComboWrap").style.display = grade.isLM ? "block" : "none";
+  document.getElementById("lsConditionWrap").style.display = grade.isLS ? "block" : "none";
+
+  // 4. 促銷加價購渲染 (業代價認列)
+  const promoBox = document.getElementById("promoBox");
+  promoBox.innerHTML = "";
+  if (grade.promos && grade.promos.length > 0) {
+    if (grade.promoType === "single") {
+      // 互斥單選模式 (Radio)
+      let noneDiv = document.createElement("div");
+      noneDiv.style.marginBottom = "8px";
+      noneDiv.innerHTML = `
+        <label class="checkbox-item" style="color: #4a5568;">
+          <input type="radio" name="promo_radio" value="0" data-recognize="0" onchange="calculate()">
+          <span>不選用促銷加價購 ($0)</span>
+        </label>
+      `;
+      promoBox.appendChild(noneDiv);
+
+      grade.promos.forEach((p, idx) => {
+        let div = document.createElement("div");
+        div.style.marginBottom = "8px";
+        const isDefaultChecked = idx === 0 ? "checked" : "";
+        div.innerHTML = `
+          <label class="checkbox-item" style="color: #2b6cb0; font-weight: bold;">
+            <input type="radio" name="promo_radio" class="promo-item-radio" value="${p.cost}" data-recognize="${p.recognizeVal}" id="${p.id}" onchange="calculate()" ${isDefaultChecked}>
+            <span>${p.name} (專案進貨成本 $${p.cost.toLocaleString()})</span>
+          </label>
+          <div style="font-size: 0.8rem; color: #718096; margin-left: 25px;">${p.desc}</div>
+        `;
+        promoBox.appendChild(div);
+      });
+    } else {
+      // 多選模式
+      grade.promos.forEach((p) => {
+        let div = document.createElement("div");
+        div.style.marginBottom = "6px";
+        div.innerHTML = `
+          <label class="checkbox-item" style="color: #2b6cb0; font-weight: bold;">
+            <input type="checkbox" class="promo-item" value="${p.cost}" data-recognize="${p.recognizeVal}" id="${p.id}" onchange="calculate()" checked>
+            <span>${p.name} (專案進貨成本 $${p.cost.toLocaleString()})</span>
+          </label>
+          <div style="font-size: 0.8rem; color: #718096; margin-left: 25px;">${p.desc}</div>
+        `;
+        promoBox.appendChild(div);
+      });
+    }
+  } else {
+    promoBox.innerHTML = `<span style="color:#a0aec0;">本車型無特殊專案配件加價購，適用一般特仕一覽表。</span>`;
+  }
+
+  // 5. 特仕門檻標籤
+  document.getElementById("badgeThreshold").innerText = `騰躍門檻: $${grade.threshold.toLocaleString()}`;
+  document.getElementById("badgePlusThreshold").innerText = `PLUS門檻: $${grade.plusThreshold.toLocaleString()}`;
+
+  // 6. 配件精品渲染
+  const accList = document.getElementById("accList");
+  accList.innerHTML = "";
+  if (grade.accessories && grade.accessories.length > 0) {
+    grade.accessories.forEach(acc => {
+      let div = document.createElement("div");
+      div.innerHTML = `
+        <label class="checkbox-item">
+          <input type="checkbox" class="acc-item" value="${acc.cost}" id="${acc.id}" onchange="calculate()">
+          <span>${acc.name} ($${acc.cost.toLocaleString()})</span>
+        </label>
+      `;
+      accList.appendChild(div);
+    });
+  } else {
+    accList.innerHTML = `<span style="color:#a0aec0; font-size:0.85rem;">此等級目前無精裝一覽表獨立項目或已含全套配件。</span>`;
+  }
+
+  calculate();
+}
+
+function calculate() {
+  const modelKey = document.getElementById("modelSelect").value;
+  const gradeKey = document.getElementById("gradeSelect").value;
+  const grade = vehicleData[modelKey].grades[gradeKey];
+  const year = document.getElementById("yearSelect").value;
+
+  // 1. 基本可優惠金額計算
+  let baseDiscount = 0;
+  if (grade.isNX200) {
+    const met = document.getElementById("nxTargetMet").checked;
+    baseDiscount = met ? grade.discounts[year].yes : grade.discounts[year].no;
+  } else {
+    baseDiscount = grade.discounts[year] || 0;
+  }
+
+  // 2. 配件實質進貨成本 與 特仕門檻認列金額
+  let accCost = 0;
+  let accRecognized = 0;
+
+  // 加價購項目：支援 Radio 單選與 Checkbox 多選
+  if (grade.promoType === "single") {
+    const selectedRadio = document.querySelector('input[name="promo_radio"]:checked');
+    if (selectedRadio) {
+      accCost += parseInt(selectedRadio.value);
+      accRecognized += parseInt(selectedRadio.getAttribute("data-recognize") || 0);
+    }
+  } else {
+    document.querySelectorAll(".promo-item:checked").forEach(cb => {
+      accCost += parseInt(cb.value);
+      accRecognized += parseInt(cb.getAttribute("data-recognize"));
+    });
+  }
+
+  // 一般配件項目：成本與認列金額均為業代價
+  document.querySelectorAll(".acc-item:checked").forEach(cb => {
+    let val = parseInt(cb.value);
+    accCost += val;
+    accRecognized += val;
+  });
+
+  document.getElementById("badgeCurrentRec").innerText = `認列累積: $${accRecognized.toLocaleString()}`;
+
+  // 3. 特仕獎勵計算
+  let specialBonus = 0;
+  let bonusLabel = "未達門檻 ($0)";
+  let diffBadge = document.getElementById("badgeDiffToThreshold");
+
+  if (accRecognized >= grade.plusThreshold) {
+    specialBonus = grade.plusBonus;
+    bonusLabel = `騰躍 PLUS 達成 (+$${specialBonus.toLocaleString()})`;
+    diffBadge.innerText = `已達最高門檻 騰躍 PLUS！(獎勵 $${specialBonus.toLocaleString()})`;
+    diffBadge.style.background = "#c6f6d5";
+    diffBadge.style.color = "#22543d";
+    diffBadge.style.borderColor = "#9ae6b4";
+  } else if (accRecognized >= grade.threshold) {
+    specialBonus = grade.specialBonus;
+    bonusLabel = `騰躍特仕 達成 (+$${specialBonus.toLocaleString()})`;
+    const diffToPlus = grade.plusThreshold - accRecognized;
+    const bonusGap = grade.plusBonus - grade.specialBonus;
+    diffBadge.innerText = `已達騰躍！還差 $${diffToPlus.toLocaleString()} 達 PLUS (獎勵再加 $${bonusGap.toLocaleString()})`;
+    diffBadge.style.background = "#ebf8ff";
+    diffBadge.style.color = "#2b6cb0";
+    diffBadge.style.borderColor = "#bee3f8";
+  } else {
+    const diffToNormal = grade.threshold - accRecognized;
+    diffBadge.innerText = `還差 $${diffToNormal.toLocaleString()} 達騰躍門檻 (拿 $${grade.specialBonus.toLocaleString()} 獎勵)`;
+    diffBadge.style.background = "#fffaf0";
+    diffBadge.style.color = "#c05621";
+    diffBadge.style.borderColor = "#fbd38d";
+  }
+  document.getElementById("badgeSpecialReward").innerText = bonusLabel;
+
+  // 4. 活動專案加碼 (雙十 / LM COMBO / LS 未超折)
+  let eventBonus = 0;
+  if (grade.allowEarlyBird) {
+    eventBonus += parseInt(document.getElementById("earlyBirdSelect").value);
+  }
+  if (grade.isLM) {
+    eventBonus += parseInt(document.getElementById("lmComboSelect").value);
+  }
+  if (grade.isLS && document.getElementById("lsBonusMet").checked) {
+    eventBonus += 30000;
+  }
+
+  // 5. 個人職級獎勵
+  let tierBonus = parseInt(document.getElementById("tierSelect").value);
+
+  // 6. 總計結算
+  const totalCost = grade.listPrice + accCost;
+  const maxDiscount = baseDiscount + eventBonus + specialBonus + tierBonus;
+  const floorPrice = totalCost - maxDiscount;
+
+  // 介面渲染
+  document.getElementById("txtListPrice").innerText = `$${grade.listPrice.toLocaleString()}`;
+  document.getElementById("txtAccCost").innerText = `+$${accCost.toLocaleString()}`;
+  document.getElementById("txtTotalCost").innerText = `$${totalCost.toLocaleString()}`;
+
+  document.getElementById("txtBaseDiscount").innerText = `-$${baseDiscount.toLocaleString()}`;
+  document.getElementById("txtEventBonus").innerText = `-$${eventBonus.toLocaleString()}`;
+  document.getElementById("txtSpecialReward").innerText = `-$${specialBonus.toLocaleString()}`;
+  document.getElementById("txtTierReward").innerText = `-$${tierBonus.toLocaleString()}`;
+  document.getElementById("txtMaxDiscount").innerText = `-$${maxDiscount.toLocaleString()}`;
+
+  document.getElementById("txtFloorPrice").innerText = `$${floorPrice.toLocaleString()}`;
+
+  // 7. 客戶出價比對
+  const targetVal = document.getElementById("targetPrice").value;
+  const compBox = document.getElementById("compareResult");
+  if (targetVal && targetVal > 0) {
+    const targetPrice = parseInt(targetVal);
+    const diff = targetPrice - floorPrice;
+    compBox.style.display = "block";
+    if (diff >= 0) {
+      compBox.className = "result-alert alert-success";
+      compBox.innerHTML = `可合規承做！<br><span style="font-size:0.85rem">預估利潤空間：$${diff.toLocaleString()} 元</span>`;
+    } else {
+      compBox.className = "result-alert alert-danger";
+      compBox.innerHTML = `嚴重超折倒賠！<br><span style="font-size:0.85rem">超出底線需自行倒貼超折：$${Math.abs(diff).toLocaleString()} 元</span>`;
+    }
+  } else {
+    compBox.style.display = "none";
+  }
+}
+</script>
+
+</body>
+</html>
